@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { hot } from 'react-hot-loader';
+import { Button } from '@blueprintjs/core';
 
 interface State {
     time: number;
@@ -16,7 +17,7 @@ class App extends React.Component<{}, State>{
     }
 
     render() {
-        return <div> App2 {this.state.time}</div>
+        return <div><Button text="hi"/> App3 {this.state.time}</div>
     }
 }
 
