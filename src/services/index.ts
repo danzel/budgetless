@@ -19,3 +19,7 @@ container.bind(Services.Database).toConstantValue(createDatabase());
 container.bind(Services.OfxParser).to(OfxParser).inSingletonScope();
 
 export const { lazyInject } = getDecorators(container);
+
+if (module && module.hot) {
+	module.hot.decline();
+}
