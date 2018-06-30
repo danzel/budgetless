@@ -1,0 +1,15 @@
+{
+	"type": "sqlite",
+	"database": "database.sqlite",
+	"logging": true,
+	"logger": "simple-console",
+	"entities": [
+		"src/entities/**/*.ts"
+	],
+	"migrations": [
+		"src/migrations/**/*.ts"
+	],
+	"cli": {
+		"migrationsDir": "src/migrations"
+	}
+}

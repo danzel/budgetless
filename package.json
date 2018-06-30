@@ -6,7 +6,8 @@
     "dev": "electron-webpack dev",
     "compile": "electron-webpack",
     "dist": "yarn compile && electron-builder",
-    "dist:dir": "yarn dist --dir -c.compression=store -c.mac.identity=null"
+    "dist:dir": "yarn dist --dir -c.compression=store -c.mac.identity=null",
+    "typeorm": "ts-node --project ./tsconfig.commonjs.json ./node_modules/typeorm/cli.js"
   },
   "dependencies": {
     "@blueprintjs/core": "^2.3.1",
@@ -19,6 +20,8 @@
     "react-router-dom": "^4.3.1",
     "react-transition-group": "^2.3.1",
     "source-map-support": "^0.5.5",
+    "sqlite3": "^4.0.1",
+    "typeorm": "^0.2.7",
     "xml2js": "^0.4.19"
   },
   "devDependencies": {
@@ -34,6 +37,7 @@
     "electron-webpack": "^2.1.2",
     "electron-webpack-ts": "^2.0.2",
     "react-hot-loader": "^4.3.3",
+    "ts-node": "^7.0.0",
     "typescript": "^2.9.2",
     "webpack": "4.8.3"
   },
