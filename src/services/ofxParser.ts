@@ -1,7 +1,9 @@
 import { ParseResult, ParseTransaction } from "./parseResult";
 import * as xml2js from 'xml2js';
 import * as dayjs from "dayjs";
+import { injectable } from "inversify";
 
+@injectable()
 export class OfxParser {
 	parse(fileContents: string): ParseResult {
 

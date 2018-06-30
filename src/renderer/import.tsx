@@ -1,15 +1,20 @@
 import * as React from 'react';
 import Dropzone, { ImageFile } from 'react-dropzone';
 import { NonIdealState } from '@blueprintjs/core';
-import { OfxParser } from '../services';
+import { OfxParser, lazyInject, Services } from '../services';
 
 import './import.css';
+import { Database } from '../services/database';
 
 interface State {
 	dropzoneActive: boolean;
 }
 
 export class Import extends React.Component<{}, State> {
+
+	@lazyInject(Services.Database)
+	private database!: Promise<Database>;
+
 	constructor(props: any) {
 		super(props);
 
@@ -17,6 +22,8 @@ export class Import extends React.Component<{}, State> {
 	}
 
 	async onDrop(arg0: ImageFile[]) {
+		console.log((await this.database).bankAccounts);
+		
 		this.setState({
 			dropzoneActive: false
 		});
