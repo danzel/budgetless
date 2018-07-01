@@ -1,10 +1,12 @@
 import { injectable } from "inversify";
 import { createConnection, Connection, Repository } from "typeorm";
-import { BankAccount } from "../entities";
+import { BankAccount, BankTransaction, Category } from "../entities";
 
 let config = require('../../ormconfig.json')
 config.entities = [
-	BankAccount
+	BankAccount,
+	BankTransaction,
+	Category
 ];
 config.migrations = [];
 

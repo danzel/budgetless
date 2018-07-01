@@ -1,6 +1,8 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { HashRouter } from 'react-router-dom';
+import { HashRouter, Router } from 'react-router-dom';
+import { container, Services } from '../services';
+import { History } from 'history';
 
 import "normalize.css/normalize.css";
 import "@blueprintjs/core/lib/css/blueprint.css";
@@ -9,9 +11,11 @@ import './index.css';
 
 import App from './app';
 
+const history = container.get<History>(Services.History);
+
 ReactDOM.render(
-	<HashRouter>
+	<Router history={history}>
 		<App />
-	</HashRouter>,
+	</Router>,
 	document.getElementById('app')
 )

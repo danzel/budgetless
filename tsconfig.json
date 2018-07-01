@@ -1,7 +1,12 @@
 {
 	"extends": "./node_modules/electron-webpack/tsconfig-base.json",
 	"compilerOptions": {
+		"target": "es5",
 		"emitDecoratorMetadata": true,
-		"jsx": "react"
+		"jsx": "react",
+		"lib": [
+			"es2015",
+			"dom"
+		]
 	}
 }
