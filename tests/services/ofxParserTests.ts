@@ -1,7 +1,8 @@
 import test from 'ava';
+import 'reflect-metadata';
 import * as fs from 'fs';
 import * as dayjs from 'dayjs';
-import { OfxParser } from '../../src/services';
+import { OfxParser } from '../../src/services/ofxParser';
 
 test('OfxParser can parse an OFX file', t => {
 	let parser = new OfxParser();

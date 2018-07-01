@@ -48,7 +48,8 @@ export class OfxParser {
 				transactions.push({
 					amount: parseFloat(t.TRNAMT[0]),
 					date: this.parseDate(t.DTPOSTED[0]),
-					note: t.MEMO[0]
+					note: t.MEMO[0],
+					balance: null //Calculated below
 				})
 			})
 		} catch (err) {

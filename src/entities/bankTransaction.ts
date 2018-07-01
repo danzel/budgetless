@@ -8,23 +8,25 @@ const moneyTransformer = {
 	from(value: number | null) { return value == null ? null : (value / 100) }
 };
 
+export const dateTransformer = {
+	to(value: dayjs.Dayjs) { return value.format("YYYY-MM-DD"); },
+	from(value: string) { return dayjs(value) }
+};
+
 @Entity()
 export class BankTransaction {
 	@PrimaryGeneratedColumn()
 	bankTransactionId?: number;
 
-	@ManyToOne(type => BankAccount)
+	@ManyToOne(type => BankAccount, ba => ba.transactions, { onDelete: 'CASCADE' })
 	bankAccount: BankAccount;
 
-	@ManyToOne(type => Category)
-	category: Category;
+	@ManyToOne(type => Category, cat => cat.transactions, { onDelete: 'SET NULL' })
+	category?: Category;
 
 	//The date this transaction occurred
 	@Column('text', {
-		transformer: {
-			to(value: dayjs.Dayjs) { return value.format("YYYY-MM-DD"); },
-			from(value: string) { return dayjs(value) }
-		}
+		transformer: dateTransformer
 	})
 	date: dayjs.Dayjs;
 
@@ -53,7 +55,7 @@ export class BankTransaction {
 	@Column()
 	userNote: string;
 
-	constructor(bankAccount: BankAccount, category: Category, date: dayjs.Dayjs, amount: number, note: string, balance: number | null) {
+	constructor(bankAccount: BankAccount, category: Category | undefined, date: dayjs.Dayjs, amount: number, note: string, balance: number | null) {
 		this.bankAccount = bankAccount;
 		this.category = category;
 		this.date = date;

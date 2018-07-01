@@ -12,7 +12,7 @@ export interface ParseTransaction {
 	note: string;
 
 	//The balance after this transaction
-	balance?: number;
+	balance: number | null;
 }
 
 export interface ParseResult {
