@@ -83,14 +83,14 @@ export class ManageAccounts extends React.Component<{}, State> {
 				<table className="pt-html-table pt-html-table-striped">
 					<thead>
 						<tr>
-							<th>Number</th>
 							<th>Name</th>
+							<th>Number</th>
 						</tr>
 					</thead>
 					<tbody>
 						{this.state.accounts.map(a => <tr key={a.bankAccountId}>
-							<td>{a.bankAccountNumber}</td>
 							<td>{a.name}</td>
+							<td>{a.bankAccountNumber}</td>
 							<td><Button minimal intent={Intent.DANGER} icon="delete" onClick={() => this.deleteAccount(a)} /></td>
 						</tr>)}
 					</tbody>
@@ -99,8 +99,8 @@ export class ManageAccounts extends React.Component<{}, State> {
 			<Card>
 				<h3>Add Account</h3>
 				<ControlGroup vertical>
-					<InputGroup leftIcon="bank-account" placeholder="Account Number" value={this.state.createAccountName} onChange={(e: React.ChangeEvent<HTMLInputElement>) => this.setState({ createAccountName: e.target.value })} />
-					<InputGroup leftIcon="bookmark" placeholder="Name" value={this.state.createAccountNumber} onChange={(e: React.ChangeEvent<HTMLInputElement>) => this.setState({ createAccountNumber: e.target.value })} />
+					<InputGroup leftIcon="bank-account" placeholder="Account Number" value={this.state.createAccountNumber} onChange={(e: React.ChangeEvent<HTMLInputElement>) => this.setState({ createAccountNumber: e.target.value })} />
+					<InputGroup leftIcon="bookmark" placeholder="Name" value={this.state.createAccountName} onChange={(e: React.ChangeEvent<HTMLInputElement>) => this.setState({ createAccountName: e.target.value })} />
 					<Button large text="Add Account" intent={Intent.PRIMARY} onClick={() => this.addAccount()} />
 				</ControlGroup>
 			</Card>
