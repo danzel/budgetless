@@ -30,6 +30,7 @@ export async function createDatabase(config?: SqliteConnectionOptions) {
 	(<any>config).migrations = allMigrations;
 
 	let connection = await createConnection(config);
+	await connection.runMigrations();
 	let bankAccounts = connection.getRepository(BankAccount);
 	let categories = connection.getRepository(Category);
 	let transactions = connection.getRepository(BankTransaction);
