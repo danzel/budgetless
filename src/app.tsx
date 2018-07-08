@@ -7,6 +7,7 @@ import { Popover, Position, Menu, MenuItem } from '@blueprintjs/core';
 import { lazyInject, Services, History } from './services';
 import { ManageAccounts } from './manageAccounts';
 import { ManageCategories } from './manageCategories';
+import { ManageRules } from './manageRules';
 
 interface State {
 }
@@ -29,6 +30,7 @@ class App extends React.Component<{}, State>{
 			<Menu>
 				<MenuItem text="Accounts" onClick={() => this.history.push('/manage-accounts')} />
 				<MenuItem text="Categories" onClick={() => this.history.push('/manage-categories')} />
+				<MenuItem text="Rules" onClick={() => this.history.push('/manage-rules')} />
 			</Menu>
 		);
 
@@ -52,6 +54,7 @@ class App extends React.Component<{}, State>{
 					<Route path='/import' component={Import} />
 					<Route path='/manage-accounts' component={ManageAccounts} />
 					<Route path='/manage-categories' component={ManageCategories} />
+					<Route path='/manage-rules' component={ManageRules} />
 				</Switch>
 			</div>);
 	}
