@@ -1,10 +1,14 @@
 import * as React from 'react';
 import { NonIdealState } from '@blueprintjs/core';
-import { OfxParser, lazyInject, Services, Database } from './services';
+import { OfxParser, lazyInject, Services, Database, ImportHelper, ParseTransaction } from './services';
+import { BankAccount, BankTransaction } from './entities';
 
 interface State {
 	dropzoneActive: boolean;
-	lastbankAccount: string;
+
+	bankAccount?: BankAccount;
+	duplicates?: ParseTransaction[];
+	transactions?: BankTransaction[];
 }
 
 export class Import extends React.Component<{}, State> {
@@ -15,7 +19,7 @@ export class Import extends React.Component<{}, State> {
 	constructor(props: any) {
 		super(props);
 
-		this.state = { dropzoneActive: false, lastbankAccount: 'none' };
+		this.state = { dropzoneActive: false };
 	}
 
 	onDrop(ev: React.DragEvent) {
@@ -32,11 +36,20 @@ export class Import extends React.Component<{}, State> {
 			dropzoneActive: false
 		});
 
-		let text = await new Response(file).text();
-		let result = new OfxParser().parse(text);
-		this.setState({ lastbankAccount: result.bankAccountNumber });
-		console.log(result.bankAccountNumber);
-		console.log(result.transactions.length);
+		try {
+			let text = await new Response(file).text();
+			let parsed = new OfxParser().parse(text);
+			let helper = new ImportHelper(this.database);
+			let result = await helper.dupeCheck(parsed);
+
+			this.setState({
+				bankAccount: (await (await this.database).bankAccounts.find({ where: { bankAccountNumber: parsed.bankAccountNumber } }))[0],
+				duplicates: result.duplicates,
+				transactions: result.newTransactions
+			});
+		} catch (err) {
+			alert((err as Error).message)
+		}
 	}
 
 	onDragEnter(ev: React.DragEvent) {
@@ -53,9 +66,15 @@ export class Import extends React.Component<{}, State> {
 	}
 
 	render() {
-		return <div style={{ position: 'relative', width: '100%', height: 'calc(100% - 50px)' }} className={this.state.dropzoneActive ? 'dropzone-active' : ''} onDrop={d => this.onDrop(d)} onDragOver={e => this.onDragEnter(e)} onDragLeave={() => this.onDragLeave()}>
-			<NonIdealState visual='import' title="Import a file" description="Drag a file on or click to browse" />
-			<span>{this.state.lastbankAccount}</span>
+
+		if (!this.state.bankAccount || !this.state.duplicates || !this.state.transactions) {
+			return <div style={{ position: 'relative', width: '100%', height: 'calc(100% - 50px)' }} className={this.state.dropzoneActive ? 'dropzone-active' : ''} onDrop={d => this.onDrop(d)} onDragOver={e => this.onDragEnter(e)} onDragLeave={() => this.onDragLeave()}>
+				<NonIdealState visual='import' title="Import a file" description="Drag a file on or click to browse" />
+			</div>;
+		}
+
+		return <div>
+			{this.state.bankAccount.name} / {this.state.duplicates.length} / {this.state.transactions.length}
 		</div>;
 	}
 }

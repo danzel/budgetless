@@ -9,6 +9,7 @@ import { createHashHistory } from 'history';
 export { Database } from './database';
 export * from './ofxParser';
 export * from './parseResult';
+export * from './importHelper';
 export { History } from 'history';
 
 export const container = new Container();
