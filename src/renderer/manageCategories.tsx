@@ -36,7 +36,7 @@ export class ManageCategories extends React.Component<{}, State> {
 		}
 
 		if (this.state.categories && this.state.categories.some(a => a.name == this.state.createCategoryName)) {
-			alert("This account number already exists");
+			alert("This category name already exists");
 			return;
 		}
 
@@ -72,7 +72,6 @@ export class ManageCategories extends React.Component<{}, State> {
 				<thead>
 					<tr>
 						<th>Name</th>
-						<th>Number</th>
 					</tr>
 				</thead>
 				<tbody>
