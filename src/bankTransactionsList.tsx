@@ -1,17 +1,22 @@
 import * as React from 'react';
-import { Navbar, NavbarGroup, Alignment, ButtonGroup, Button, MenuItem, Checkbox, Popover, Menu } from '@blueprintjs/core';
-import { MultiSelect } from '@blueprintjs/select';
-import { BankAccount } from './entities';
+import { Navbar, NavbarGroup, Alignment, ButtonGroup, Button, MenuItem, Checkbox, Popover, Menu, PopoverInteractionKind, NavbarDivider } from '@blueprintjs/core';
+import { Select } from '@blueprintjs/select';
+import { BankAccount, Category } from './entities';
 import { lazyInject, Services, Database } from './services';
 
 
-let BankAccountSelect = MultiSelect.ofType<BankAccount>();
+let CategorySelect = Select.ofType<Category>();
 
+const everyCategory = new Category("Everything");
+const uncategorisedCategory = new Category("Uncategorised");
 
 interface State {
 	accounts?: BankAccount[];
+	categories?: Category[];
 
 	selectedAccounts: BankAccount[];
+
+	selectedCategory: Category;
 }
 
 
@@ -23,7 +28,8 @@ export class BankTransactionsList extends React.Component<{}, State> {
 		super(props);
 
 		this.state = {
-			selectedAccounts: []
+			selectedAccounts: [],
+			selectedCategory: everyCategory
 		};
 
 		this.load();
@@ -32,10 +38,12 @@ export class BankTransactionsList extends React.Component<{}, State> {
 	private async load() {
 		let db = await this.database;
 
+		let categories = await db.categories.find({ order: { name: 'ASC' } })
 		let accounts = await db.bankAccounts.find({ order: { name: 'ASC' } });
 
 		this.setState({
 			accounts,
+			categories: [everyCategory, uncategorisedCategory, ...categories],
 			selectedAccounts: accounts
 		})
 	}
@@ -44,7 +52,7 @@ export class BankTransactionsList extends React.Component<{}, State> {
 		return this.state.selectedAccounts.some(a => a == account);
 	}
 
-	private toggleAccount(event: React.MouseEvent, account: BankAccount) {
+	private toggleAccount(account: BankAccount) {
 		if (this.state.selectedAccounts.some(a => a == account)) {
 			this.setState({
 				selectedAccounts: this.state.selectedAccounts.filter(a => a != account)
@@ -56,21 +64,24 @@ export class BankTransactionsList extends React.Component<{}, State> {
 				selectedAccounts: a
 			});
 		}
+	}
 
-		event.preventDefault();
-		//TODO ^^ This doesn't work
+	private selectCategory(c: Category) {
+		this.setState({
+			selectedCategory: c
+		});
 	}
 
 	render() {
 
-		if (!this.state.accounts) {
+		if (!this.state.accounts || !this.state.categories) {
 			return <div>Loading</div>;
 		}
 
 		let accountsButtonText = "All Accounts Selected";
 		if (this.state.accounts.length != this.state.selectedAccounts.length) {
 			if (this.state.selectedAccounts.length == 1) {
-				accountsButtonText = "1 Account Selected";
+				accountsButtonText = this.state.selectedAccounts[0].name;
 			} else {
 				accountsButtonText = this.state.selectedAccounts.length + " Accounts Selected";
 			}
@@ -86,20 +97,34 @@ export class BankTransactionsList extends React.Component<{}, State> {
 						<Button icon="chevron-right" />
 					</ButtonGroup>
 
-					<Popover minimal
-						target={<Button text={accountsButtonText} />}
-						content={<Menu>
+					<NavbarDivider />
+
+					<Popover>
+						<Button icon="bank-account" text={accountsButtonText} />
+						<Menu>
 							{this.state.accounts.map(a => <MenuItem
+								shouldDismissPopover={false}
 								key={a.bankAccountId}
 								text={a.name}
 								icon={this.isAccountSelected(a) ? "tick" : "blank"}
-								onClick={(e: React.MouseEvent) => this.toggleAccount(e, a)} />)}
-						</Menu>}
-					/>
+								onClick={() => this.toggleAccount(a)} />)}
+						</Menu>
+					</Popover>
 
-					Category
+					<NavbarDivider />
+
+					<CategorySelect
+						items={this.state.categories}
+						itemPredicate={(filter, c) => c.name.toLocaleLowerCase().includes(filter.toLocaleLowerCase())}
+						itemRenderer={(c, p) => <MenuItem active={p.modifiers.active} disabled={p.modifiers.disabled} key={c.categoryId} text={c.name} onClick={p.handleClick} />}
+						onItemSelect={c => this.selectCategory(c)}
+					>
+						<Button text={this.state.selectedCategory.name} icon="tag" />
+					</CategorySelect>
+
 				</NavbarGroup>
 			</Navbar>
+			
 		</div>;
 	}
 }
