@@ -40,6 +40,10 @@ export class ManageAccounts extends React.Component<{}, State> {
 			alert("Please enter an Account Name");
 			return;
 		}
+		if (!this.state.createAccountNumber.match('^([0-9-])*$')) {
+			alert("Invalid Account Name, expected only numbers and -");
+			return;
+		}
 
 		if (this.state.accounts && this.state.accounts.some(a => a.bankAccountNumber == this.state.createAccountNumber)) {
 			alert("This account number already exists");
