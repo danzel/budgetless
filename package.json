@@ -5,7 +5,8 @@
   "main": "index.ts",
   "scripts": {
     "postinstall": "electron-builder install-app-deps",
-    "start": "electron ."
+    "start": "electron .",
+    "typeorm": "ts-node ./node_modules/typeorm/cli.js"
   },
   "dependencies": {
     "@blueprintjs/core": "^2.3.1",
@@ -31,6 +32,7 @@
     "ava": "^0.25.0",
     "electron-builder": "^20.18.0",
     "electron-prebuilt-compile": "^2.0.3",
+    "ts-node": "^7.0.0",
     "typescript": "^2.9.2"
   }
 }

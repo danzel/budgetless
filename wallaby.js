@@ -1,5 +1,3 @@
-const tsConfig = require('./tsconfig.commonjs.json');
-
 module.exports = function (wallaby) {
 	return {
 		files: [
@@ -11,9 +9,6 @@ module.exports = function (wallaby) {
 		tests: [
 			"tests/**/*.ts"
 		],
-		compilers: {
-			'**/*.ts?(x)': wallaby.compilers.typeScript(tsConfig.compilerOptions)
-		},
 		testFramework: 'ava',
 		env: {
 			type: 'node',

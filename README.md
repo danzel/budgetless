@@ -6,16 +6,16 @@ App for tracking money spend and comparing to a budget.
 
 ```bash
 # run application in development mode
-yarn dev
+yarn start
 
 # compile source code and create webpack output
-yarn compile
+[TODO] yarn compile
 
 # `yarn compile` & create build with electron-builder
-yarn dist
+[TODO] yarn dist
 
 # `yarn compile` & create unpacked build with electron-builder
-yarn dist:dir
+[TODO] yarn dist:dir
 ```
 
 ### Database Migrations

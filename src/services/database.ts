@@ -18,7 +18,9 @@ export class Database {
 export async function createDatabase(config?: SqliteConnectionOptions) {
 	console.log("Creating the database");
 
-	if (!config) {
+	if (config) {
+		config = { ...ormConfig, ...config};
+	} else {
 		config = ormConfig;
 	}
 
