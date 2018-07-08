@@ -3,13 +3,13 @@ import test from 'ava';
 import { ImportHelper } from "../../src/services/importHelper";
 import { withDatabase } from '../helper';
 import * as dayjs from 'dayjs';
-import { BankTransaction, BankAccount } from '../../src/entities';
+import { BankTransaction, BankAccount, Category } from '../../src/entities';
 
 test('ImportHelper finds no dupe for first transaction', async t => withDatabase(async database => {
 	let importHelper = new ImportHelper(database);
 	let db = (await database);
 
-	await db.bankAccounts.insert({
+	await db.bankAccounts.save({
 		bankAccountNumber: '1',
 		name: 'Account 1'
 	});
@@ -34,7 +34,7 @@ test('ImportHelper finds dupe', async t => withDatabase(async database => {
 	let importHelper = new ImportHelper(database);
 	let db = (await database);
 
-	let account: BankAccount = await db.bankAccounts.save({
+	let account = await db.bankAccounts.save({
 		bankAccountNumber: '1',
 		name: 'Account 1'
 	});
@@ -43,7 +43,7 @@ test('ImportHelper finds dupe', async t => withDatabase(async database => {
 		amount: 100,
 		balance: 100,
 		date: dayjs('2018-01-01'),
-		note: 'SOME TRANSACTION',
+		description: 'SOME TRANSACTION',
 		userNote: '',
 		bankAccount: account
 	})
@@ -62,4 +62,40 @@ test('ImportHelper finds dupe', async t => withDatabase(async database => {
 	
 	t.is(result.newTransactions.length, 0);
 	t.is(result.duplicates.length, 1);
+}));
+
+test('ImportHelper applies rules', async t => withDatabase(async database => {
+	let importHelper = new ImportHelper(database);
+	let db = (await database);
+
+	await db.bankAccounts.save({
+		bankAccountNumber: '1',
+		name: 'Account 1'
+	});
+
+	let category: Category = await db.categories.save({
+		name: 'test'
+	});
+	let rule = await db.rules.save({
+		category: category,
+		descriptionContains: 'some'
+	});
+
+	let result = await importHelper.dupeCheck({
+		bankAccountNumber: '1',
+		transactions: [
+			{
+				amount: 100,
+				balance: 100,
+				date: dayjs('2018-01-01'),
+				note: 'SOME TRANSACTION'
+			}
+		]
+	})
+	
+	t.is(result.newTransactions.length, 1);
+	t.is(result.duplicates.length, 0);
+
+	t.truthy(result.newTransactions[0].category);
+	t.is(result.newTransactions[0].category!.categoryId, category.categoryId);
 }));

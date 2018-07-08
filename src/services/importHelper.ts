@@ -1,7 +1,7 @@
 import { ParseResult, ParseTransaction } from './parseResult';
 import { Database } from './database';
 import { Between } from 'typeorm';
-import { dateTransformer, BankTransaction } from '../entities';
+import { dateTransformer, BankTransaction, CategoryRule } from '../entities';
 
 export interface DupeCheckResult {
 	duplicates: ParseTransaction[];
@@ -13,12 +13,14 @@ export class ImportHelper {
 	constructor(private databasePromise: Promise<Database>) {
 	}
 
-	/** Separates out the provided transactions in to duplicates and not duplicates */
+	/** Separates out the provided transactions in to duplicates and not duplicates. not duplicates are categories by the existing rules */
 	async dupeCheck(values: ParseResult): Promise<DupeCheckResult> {
 		if (values.transactions.length == 0) {
 			return { duplicates: [], newTransactions: [] };
 		}
-		
+
+		let db = (await this.databasePromise);
+
 		let minDate = values.transactions[0].date;
 		let maxDate = values.transactions[0].date;
 
@@ -31,7 +33,7 @@ export class ImportHelper {
 			}
 		});
 
-		let account = await (await this.databasePromise).bankAccounts.findOne({
+		let account = await db.bankAccounts.findOne({
 			bankAccountNumber: values.bankAccountNumber
 		});
 
@@ -39,7 +41,7 @@ export class ImportHelper {
 			throw new Error("Bank account not found: " + values.bankAccountNumber)
 		}
 
-		let existing = await (await this.databasePromise).transactions.find({
+		let existing = await db.transactions.find({
 			date: Between(dateTransformer.to(minDate), dateTransformer.to(maxDate)),
 			bankAccount: account
 		});
@@ -50,13 +52,35 @@ export class ImportHelper {
 		};
 
 		values.transactions.forEach(t => {
-			if (existing.some(e => e.amount == t.amount && e.date.isSame(t.date) && e.note == t.note)) {
+			if (existing.some(e => e.amount == t.amount && e.date.isSame(t.date) && e.description == t.note)) {
 				result.duplicates.push(t);
 			} else {
 				result.newTransactions.push(new BankTransaction(account!, undefined, t.date, t.amount, t.note, t.balance));
 			}
 		})
 
+		//Apply the rules
+		let rules = await db.rules.find();
+		this.applyRules(result.newTransactions, rules);
+
 		return result;
+	}
+
+	/** Applies the given rules to the given transactions and returns those transactions that received categories */
+	applyRules(transactions: BankTransaction[], rules: CategoryRule[]): BankTransaction[] {
+		let res = new Array<BankTransaction>();
+
+		transactions.forEach(t => {
+			for (let i = 0; i < rules.length; i++) {
+				let r = rules[i];
+				if (r.matches(t)) {
+					t.category = r.category;
+					res.push(t);
+					break;
+				}
+			}
+		})
+
+		return res;
 	}
 }

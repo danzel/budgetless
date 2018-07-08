@@ -1,5 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 import { BankTransaction } from './bankTransaction';
+import { CategoryRule } from './categoryRule';
 
 @Entity()
 export class Category {
@@ -8,6 +9,9 @@ export class Category {
 
 	@OneToMany(type => BankTransaction, bt => bt.bankAccount)
 	transactions?: BankTransaction[];
+
+	@OneToMany(type => CategoryRule, bt => bt.category)
+	rules?: CategoryRule[];
 
 	@Column()
 	name: string;

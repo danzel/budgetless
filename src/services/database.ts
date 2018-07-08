@@ -1,6 +1,6 @@
 import { injectable } from "inversify";
 import { createConnection, getConnection, Connection, Repository } from "typeorm";
-import { BankAccount, BankTransaction, Category } from "../entities";
+import { BankAccount, BankTransaction, Category, CategoryRule } from "../entities";
 import { SqliteConnectionOptions } from "typeorm/driver/sqlite/SqliteConnectionOptions";
 
 let ormConfig: SqliteConnectionOptions = require('../../ormconfig.json')
@@ -11,7 +11,8 @@ export class Database {
 		public connection: Connection,
 		public bankAccounts: Repository<BankAccount>,
 		public categories: Repository<Category>,
-		public transactions: Repository<BankTransaction>
+		public transactions: Repository<BankTransaction>,
+		public rules: Repository<CategoryRule>
 	) { }
 }
 
@@ -42,6 +43,7 @@ export async function createDatabase(config?: SqliteConnectionOptions) {
 	let bankAccounts = connection.getRepository(BankAccount);
 	let categories = connection.getRepository(Category);
 	let transactions = connection.getRepository(BankTransaction);
+	let rules = connection.getRepository(CategoryRule);
 
-	return new Database(connection, bankAccounts, categories, transactions);
+	return new Database(connection, bankAccounts, categories, transactions, rules);
 }

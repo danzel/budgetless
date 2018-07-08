@@ -42,7 +42,7 @@ export class BankTransaction {
 
 	//Details about this transaction, provided by the bank
 	@Column()
-	note: string;
+	description: string;
 
 	//The balance after this transaction, provided by the bank
 	@Column('integer', {
@@ -66,7 +66,7 @@ export class BankTransaction {
 		this.category = category;
 		this.date = date;
 		this.amount = amount;
-		this.note = note;
+		this.description = note;
 
 		this.balance = balance;
 		this.calculatedBalance = balance;
