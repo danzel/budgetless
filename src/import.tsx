@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { NonIdealState } from '@blueprintjs/core';
+import { NonIdealState, Tag, Intent, Button } from '@blueprintjs/core';
 import { OfxParser, lazyInject, Services, Database, ImportHelper, ParseTransaction } from './services';
 import { BankAccount, BankTransaction } from './entities';
 
@@ -52,6 +52,20 @@ export class Import extends React.Component<{}, State> {
 		}
 	}
 
+	async import() {
+		let db = (await this.database);
+
+		db.transactions.save(this.state.transactions!);
+
+		alert('Saved ' + this.state.transactions!.length + ' transactions');
+
+		this.setState({
+			transactions: undefined,
+			duplicates: undefined,
+			bankAccount: undefined
+		})
+	}
+
 	onDragEnter(ev: React.DragEvent) {
 		ev.preventDefault();
 		this.setState({
@@ -66,15 +80,35 @@ export class Import extends React.Component<{}, State> {
 	}
 
 	render() {
-
 		if (!this.state.bankAccount || !this.state.duplicates || !this.state.transactions) {
 			return <div style={{ position: 'relative', width: '100%', height: 'calc(100% - 50px)' }} className={this.state.dropzoneActive ? 'dropzone-active' : ''} onDrop={d => this.onDrop(d)} onDragOver={e => this.onDragEnter(e)} onDragLeave={() => this.onDragLeave()}>
 				<NonIdealState visual='import' title="Import a file" description="Drag a file on or click to browse" />
 			</div>;
 		}
 
+		let categoryCount = new Map<string, number>();
+		this.state.transactions.forEach(t => {
+			let cat = t.category ? t.category.name : 'uncategorised';
+
+			let count = categoryCount.get(cat) || 0;
+			count++;
+			categoryCount.set(cat, count);
+		});
+
 		return <div>
-			{this.state.bankAccount.name} / {this.state.duplicates.length} / {this.state.transactions.length}
+			<h2>Import</h2>
+			Will import <Tag large intent={Intent.SUCCESS}>{this.state.transactions.length}</Tag> transactions in to account <Tag large>{this.state.bankAccount.name} ({this.state.bankAccount.bankAccountNumber})</Tag>. Ignoring <Tag large intent={Intent.DANGER}>{this.state.duplicates.length}</Tag> duplicates.<br />
+			<Button text="Import" intent={Intent.PRIMARY} onClick={() => this.import()} />
+
+			<table className="pt-html-table pt-html-table-bordered">
+				<thead>
+					<tr><th>Category</th><th>Count</th></tr>
+				</thead>
+				<tbody>
+					{Array.from(categoryCount).map(c => <tr key={c[0]}><td>{c[0]}</td><td>{c[1]}</td></tr>)}
+				</tbody>
+			</table>
+
 		</div>;
 	}
 }
