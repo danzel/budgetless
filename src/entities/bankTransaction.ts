@@ -1,5 +1,5 @@
 import * as dayjs from 'dayjs';
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, FindOperator } from 'typeorm';
 import { BankAccount } from './bankAccount';
 import { Category } from './category';
 
@@ -9,7 +9,13 @@ const moneyTransformer = {
 };
 
 export const dateTransformer = {
-	to(value: dayjs.Dayjs) { return value.format("YYYY-MM-DD"); },
+	to(value: dayjs.Dayjs) {
+
+		if (value instanceof FindOperator) {
+			return value;
+		}
+		return value.format("YYYY-MM-DD");
+	},
 	from(value: string) { return dayjs(value) }
 };
 

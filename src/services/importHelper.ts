@@ -50,7 +50,7 @@ export class ImportHelper {
 		};
 
 		values.transactions.forEach(t => {
-			if (existing.some(e => e.amount == t.amount && e.date == t.date && e.note == t.note)) {
+			if (existing.some(e => e.amount == t.amount && e.date.isSame(t.date) && e.note == t.note)) {
 				result.duplicates.push(t);
 			} else {
 				result.newTransactions.push(new BankTransaction(account!, undefined, t.date, t.amount, t.note, t.balance));
