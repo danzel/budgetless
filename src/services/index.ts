@@ -5,6 +5,7 @@ import 'reflect-metadata';
 import { OfxParser } from './ofxParser';
 import { createDatabase } from './database';
 import { createHashHistory } from 'history';
+import { ToasterInstance } from './toaster';
 
 export { Database } from './database';
 export * from './ofxParser';
@@ -18,10 +19,12 @@ export const Services = {
 	Database: Symbol(),
 	History: Symbol(),
 	OfxParser: Symbol(),
+	Toaster: Symbol()
 }
 
 container.bind(Services.Database).toConstantValue(createDatabase());
 container.bind(Services.History).toConstantValue(createHashHistory());
 container.bind(Services.OfxParser).to(OfxParser).inSingletonScope();
+container.bind(Services.Toaster).toConstantValue(ToasterInstance);
 
 export const { lazyInject } = getDecorators(container);

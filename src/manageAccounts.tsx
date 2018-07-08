@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { lazyInject, Database, Services } from './services';
 import { BankAccount } from './entities';
-import { Card, ControlGroup, InputGroup, Button, Intent } from '@blueprintjs/core';
+import { Card, ControlGroup, InputGroup, Button, Intent, Toaster } from '@blueprintjs/core';
 
 interface State {
 	accounts?: BankAccount[];
@@ -13,6 +13,9 @@ interface State {
 export class ManageAccounts extends React.Component<{}, State> {
 	@lazyInject(Services.Database)
 	database!: Promise<Database>;
+
+	@lazyInject(Services.Toaster)
+	private toaster!: Toaster;
 
 	constructor(props: {}) {
 		super(props);
@@ -33,20 +36,32 @@ export class ManageAccounts extends React.Component<{}, State> {
 
 	async addAccount() {
 		if (!this.state.createAccountNumber) {
-			alert('Please enter an Account Number');
+			this.toaster.show({
+				intent: Intent.DANGER,
+				message: 'Please enter an Account Number'
+			});
 			return;
 		}
 		if (!this.state.createAccountName) {
-			alert("Please enter an Account Name");
+			this.toaster.show({
+				intent: Intent.DANGER,
+				message: "Please enter an Account Name"
+			});
 			return;
 		}
 		if (!this.state.createAccountNumber.match('^([0-9-])*$')) {
-			alert("Invalid Account Name, expected only numbers and -");
+			this.toaster.show({
+				intent: Intent.DANGER,
+				message: "Invalid Account Name, expected only numbers and -"
+			});
 			return;
 		}
 
 		if (this.state.accounts && this.state.accounts.some(a => a.bankAccountNumber == this.state.createAccountNumber)) {
-			alert("This account number already exists");
+			this.toaster.show({
+				intent: Intent.DANGER,
+				message: "This account number already exists"
+			});
 			return;
 		}
 

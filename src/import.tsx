@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { NonIdealState, Tag, Intent, Button } from '@blueprintjs/core';
+import { NonIdealState, Tag, Intent, Button, Toaster } from '@blueprintjs/core';
 import { OfxParser, lazyInject, Services, Database, ImportHelper, ParseTransaction } from './services';
 import { BankAccount, BankTransaction } from './entities';
 
@@ -15,6 +15,9 @@ export class Import extends React.Component<{}, State> {
 
 	@lazyInject(Services.Database)
 	private database!: Promise<Database>;
+
+	@lazyInject(Services.Toaster)
+	private toaster!: Toaster;
 
 	constructor(props: any) {
 		super(props);
@@ -48,7 +51,10 @@ export class Import extends React.Component<{}, State> {
 				transactions: result.newTransactions
 			});
 		} catch (err) {
-			alert((err as Error).message)
+			this.toaster.show({
+				intent: Intent.DANGER,
+				message: (err as Error).message
+			})
 		}
 	}
 
@@ -57,7 +63,10 @@ export class Import extends React.Component<{}, State> {
 
 		db.transactions.save(this.state.transactions!);
 
-		alert('Saved ' + this.state.transactions!.length + ' transactions');
+		this.toaster.show({
+			intent: Intent.SUCCESS,
+			message: 'Saved ' + this.state.transactions!.length + ' transactions'
+		})
 
 		this.setState({
 			transactions: undefined,

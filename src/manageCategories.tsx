@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { lazyInject, Services, Database } from './services';
 import { Category } from './entities';
-import { Button, Intent, InputGroup } from '@blueprintjs/core';
+import { Button, Intent, InputGroup, Toaster } from '@blueprintjs/core';
 
 interface State {
 	categories?: Category[];
@@ -12,6 +12,9 @@ interface State {
 export class ManageCategories extends React.Component<{}, State> {
 	@lazyInject(Services.Database)
 	database!: Promise<Database>;
+
+	@lazyInject(Services.Toaster)
+	private toaster!: Toaster;
 
 	constructor(props: {}) {
 		super(props);
@@ -31,12 +34,18 @@ export class ManageCategories extends React.Component<{}, State> {
 
 	async addCategory() {
 		if (!this.state.createCategoryName) {
-			alert('Please enter a Category Name');
+			this.toaster.show({
+				intent: Intent.DANGER,
+				message: 'Please enter a Category Name'
+			});
 			return;
 		}
 
 		if (this.state.categories && this.state.categories.some(a => a.name == this.state.createCategoryName)) {
-			alert("This category name already exists");
+			this.toaster.show({
+				intent: Intent.DANGER,
+				message: "This category name already exists"
+			});
 			return;
 		}
 
