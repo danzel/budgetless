@@ -3,6 +3,19 @@ html, body, #app, .full-height {
 }
 
 
+.bank-transactions-list {
+	.amount {
+		text-align: right;
+
+		.income {
+			color: green;
+		}
+		.expense {
+			color: red;
+		}
+	}
+}
+
 .import {
 	.dropzone-active {
 		background-color: lightgreen !important;

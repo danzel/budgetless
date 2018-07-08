@@ -6,6 +6,7 @@ import { lazyInject, Services, Database } from './services';
 import ReactTable, { Column } from 'react-table';
 import * as dayjs from 'dayjs';
 import { In, IsNull, FindConditions } from 'typeorm';
+import * as commaNumber from 'comma-number';
 
 interface DateRange {
 	name: string;
@@ -26,6 +27,30 @@ const dateRanges = new Array<DateRange>(
 	{ name: 'This Year', start: dayjs().startOf('year'), end: dayjs().endOf('year') },
 	{ name: 'Last Year', start: dayjs().subtract(1, 'year').startOf('year'), end: dayjs().subtract(1, 'year').endOf('year') },
 );
+
+const columns: Column[] = [
+	{ Header: 'Date', accessor: 'date', Cell: d => (d.value as dayjs.Dayjs).format("YYYY-MM-DD") },
+	{
+		Header: 'Amount',
+		accessor: 'amount',
+		className: 'amount',
+		Cell: d => {
+			let amount = (d.value as number);
+			let className = amount >= 0 ? 'income' : 'expense';
+			let amountStr = commaNumber(Math.abs(amount).toFixed(2));
+			if (amount > 0) {
+				amountStr = '+ ' + amountStr;
+			} else {
+				amountStr = '- ' + amountStr;
+			}
+
+			return <span className={className}>{amountStr} </span>
+		}
+	},
+	{ Header: 'Description', accessor: 'description' },
+	{ Header: 'Category', accessor: 'category', Cell: d => d.value ? (d.value as Category).name : "NOT SET" },
+	{ Header: 'Account', accessor: 'bankAccount', Cell: d => (d.value as BankAccount).name }
+];
 
 interface State {
 	accounts?: BankAccount[];
@@ -146,14 +171,6 @@ export class BankTransactionsList extends React.Component<{}, State> {
 				accountsButtonText = this.state.selectedAccounts.length + " Accounts Selected";
 			}
 		}
-
-		const columns: Column[] = [
-			{ Header: 'Date', accessor: 'date', Cell: d => (d.value as dayjs.Dayjs).format("YYYY-MM-DD") },
-			{ Header: 'Amount', accessor: 'amount' },
-			{ Header: 'Description', accessor: 'description' },
-			{ Header: 'Category', accessor: 'category', Cell: d => d.value ? (d.value as Category).name : "NOT SET" },
-			{ Header: 'Account', accessor: 'bankAccount', Cell: d => (d.value as BankAccount).name }
-		];
 
 		return <div className="bank-transactions-list">
 			<Navbar>

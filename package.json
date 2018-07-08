@@ -11,6 +11,7 @@
   "dependencies": {
     "@blueprintjs/core": "^2.3.1",
     "@blueprintjs/select": "^2.0.1",
+    "comma-number": "^2.0.0",
     "dayjs": "^1.6.10",
     "inversify": "^4.13.0",
     "inversify-inject-decorators": "^3.1.0",
