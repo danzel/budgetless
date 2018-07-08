@@ -24,7 +24,3 @@ container.bind(Services.History).toConstantValue(createHashHistory());
 container.bind(Services.OfxParser).to(OfxParser).inSingletonScope();
 
 export const { lazyInject } = getDecorators(container);
-
-if (module && module.hot) {
-	module.hot.decline();
-}

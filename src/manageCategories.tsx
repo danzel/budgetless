@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { lazyInject, Services, Database } from '../services';
-import { Category } from '../entities';
+import { lazyInject, Services, Database } from './services';
+import { Category } from './entities';
 import { Button, Intent, InputGroup } from '@blueprintjs/core';
 
 interface State {

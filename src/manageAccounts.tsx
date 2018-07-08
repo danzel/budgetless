@@ -1,9 +1,7 @@
 import * as React from 'react';
-import { lazyInject, Database, Services } from '../services';
-import { BankAccount } from '../entities';
+import { lazyInject, Database, Services } from './services';
+import { BankAccount } from './entities';
 import { Card, ControlGroup, InputGroup, Button, Intent } from '@blueprintjs/core';
-
-import './manageAccounts.css';
 
 interface State {
 	accounts?: BankAccount[];
@@ -77,7 +75,7 @@ export class ManageAccounts extends React.Component<{}, State> {
 		}
 
 		return <div className="manage-accounts">
-			<h1>Manage Accounts</h1>
+			<h1>Manage Accounts 2</h1>
 			<Card >
 				<h3>Accounts</h3>
 				<table className="pt-html-table pt-html-table-striped">

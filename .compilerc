@@ -1,7 +1,5 @@
-/* You need to copy this in to .compilerc whenever you change it */
 {
-	"compilerOptions": {
-		"allowSyntheticDefaultImports": true,
+	"text/typescript": {
 		"emitDecoratorMetadata": true,
 		"experimentalDecorators": true,
 		"jsx": "react",
@@ -10,7 +8,7 @@
 		"module": "commonjs",
 		"moduleResolution": "node",
 		"lib": [
-			"es6",
+			"es2015",
 			"dom"
 		]
 	}

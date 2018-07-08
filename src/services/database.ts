@@ -1,8 +1,7 @@
 import { injectable } from "inversify";
-import { createConnection, Connection, Repository } from "typeorm";
+import { createConnection, getConnection, Connection, Repository } from "typeorm";
 import { BankAccount, BankTransaction, Category } from "../entities";
 import { SqliteConnectionOptions } from "typeorm/driver/sqlite/SqliteConnectionOptions";
-import { allMigrations } from "../migrations/allMigrations";
 
 let ormConfig: SqliteConnectionOptions = require('../../ormconfig.json')
 
@@ -22,14 +21,21 @@ export async function createDatabase(config?: SqliteConnectionOptions) {
 	if (!config) {
 		config = ormConfig;
 	}
-	(<any>config).entities = [
-		BankAccount,
-		BankTransaction,
-		Category
-	];
-	(<any>config).migrations = allMigrations;
+
+	let name = config.name || 'default';
+
+	//Makes hot-reload work
+	try {
+		let connection = getConnection(name);
+		if (connection.isConnected) {
+			await connection.close();
+		}
+	} catch (err) {
+		//Do nothing
+	}
 
 	let connection = await createConnection(config);
+
 	await connection.runMigrations();
 	let bankAccounts = connection.getRepository(BankAccount);
 	let categories = connection.getRepository(Category);

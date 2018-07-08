@@ -4,7 +4,7 @@ import { Route, Switch, Link } from 'react-router-dom';
 
 import { Import } from './import';
 import { Popover, Position, Menu, MenuItem } from '@blueprintjs/core';
-import { lazyInject, Services, History } from '../services';
+import { lazyInject, Services, History } from './services';
 import { ManageAccounts } from './manageAccounts';
 import { ManageCategories } from './manageCategories';
 
