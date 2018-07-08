@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { HashRouter, Router } from 'react-router-dom';
+import { Router } from 'react-router-dom';
 import { container, Services } from '../services';
 import { History } from 'history';
 
