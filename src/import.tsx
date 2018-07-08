@@ -104,7 +104,7 @@ export class Import extends React.Component<{}, State> {
 			categoryCount.set(cat, count);
 		});
 
-		return <div>
+		return <div className="import">
 			<h2>Import</h2>
 			Will import <Tag large intent={Intent.SUCCESS}>{this.state.transactions.length}</Tag> transactions in to account <Tag large>{this.state.bankAccount.name} ({this.state.bankAccount.bankAccountNumber})</Tag>. Ignoring <Tag large intent={Intent.DANGER}>{this.state.duplicates.length}</Tag> duplicates.<br />
 			<Button text="Import" intent={Intent.PRIMARY} onClick={() => this.import()} />

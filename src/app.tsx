@@ -3,8 +3,9 @@ import { hot } from 'react-hot-loader';
 import { Route, Switch, Link } from 'react-router-dom';
 
 import { Import } from './import';
-import { Popover, Position, Menu, MenuItem } from '@blueprintjs/core';
+import { Popover, Position, Menu, MenuItem, Navbar, NavbarGroup, Alignment } from '@blueprintjs/core';
 import { lazyInject, Services, History } from './services';
+import { BankTransactionsList } from './bankTransactionsList';
 import { ManageAccounts } from './manageAccounts';
 import { ManageCategories } from './manageCategories';
 import { ManageRules } from './manageRules';
@@ -36,25 +37,27 @@ class App extends React.Component<{}, State>{
 
 		return (
 			<div className='full-height'>
-				<nav className="pt-navbar pt-dark">
-					<div className="pt-navbar-group pt-align-left">
+				<Navbar className="pt-dark">
+					<NavbarGroup align={Alignment.LEFT}>
 						<div className="pt-navbar-heading">budgetless</div>
 						<input className="pt-input" placeholder="Search something..." type="text" />
-					</div>
-					<div className="pt-navbar-group pt-align-right">
+					</NavbarGroup>
+					<NavbarGroup align={Alignment.RIGHT}>
 						<Link role="button" to='/' className="pt-button pt-minimal pt-icon-home">Home</Link>
+						<Link role="button" to='/transactions-list' className="pt-button pt-minimal pt-icon-list">Transactions</Link>
 						<Link role="button" to='/import' className="pt-button pt-minimal pt-icon-import">Import</Link>
 						<span className="pt-navbar-divider"></span>
 						<Popover content={cogMenu} position={Position.BOTTOM_RIGHT}>
 							<button className="pt-button pt-minimal pt-icon-cog"></button>
 						</Popover>
-					</div>
-				</nav>
+						</NavbarGroup>
+				</Navbar>
 				<Switch>
 					<Route path='/import' component={Import} />
 					<Route path='/manage-accounts' component={ManageAccounts} />
 					<Route path='/manage-categories' component={ManageCategories} />
 					<Route path='/manage-rules' component={ManageRules} />
+					<Route path='/transactions-list' component={BankTransactionsList} />
 				</Switch>
 			</div>);
 	}

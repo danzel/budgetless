@@ -114,7 +114,10 @@ export class ManageRules extends React.Component<{}, State> {
 						<td><form onSubmit={e => { e.preventDefault(); this.addRule(); }}>
 							<InputGroup placeholder="Description to match" value={this.state.createRuleMatch} onChange={(e: React.ChangeEvent<HTMLInputElement>) => this.setState({ createRuleMatch: e.target.value })} />
 						</form></td>
-						<td><CategorySelect items={this.state.categories} itemRenderer={(i, p) => <MenuItem active={p.modifiers.active} disabled={p.modifiers.disabled} key={i.categoryId} text={i.name} onClick={p.handleClick} />} onItemSelect={c => this.setState({ createRuleCategory: c })}>
+						<td><CategorySelect
+							items={this.state.categories}
+							itemRenderer={(i, p) => <MenuItem active={p.modifiers.active} disabled={p.modifiers.disabled} key={i.categoryId} text={i.name} onClick={p.handleClick} />}
+							onItemSelect={c => this.setState({ createRuleCategory: c })}>
 							<Button
 								icon="tag"
 								rightIcon="caret-down"

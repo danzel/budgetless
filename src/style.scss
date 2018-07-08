@@ -1,0 +1,17 @@
+html, body, #app, .full-height {
+	height: 100%;
+}
+
+
+.import {
+	.dropzone-active {
+		background-color: lightgreen !important;
+	}
+}
+
+
+.manage-accounts {
+	td {
+		vertical-align: middle !important;
+	}
+}
