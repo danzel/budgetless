@@ -29,9 +29,15 @@ const dateRanges = new Array<DateRange>(
 );
 
 const columns: Column[] = [
-	{ Header: 'Date', accessor: 'date', Cell: d => (d.value as dayjs.Dayjs).format("YYYY-MM-DD") },
+	{
+		Header: 'Date',
+		width: 90,
+		accessor: 'date',
+		Cell: d => (d.value as dayjs.Dayjs).format("YYYY-MM-DD")
+	},
 	{
 		Header: 'Amount',
+		width: 100,
 		accessor: 'amount',
 		className: 'amount',
 		Cell: d => {
@@ -47,9 +53,22 @@ const columns: Column[] = [
 			return <span className={className}>{amountStr} </span>
 		}
 	},
-	{ Header: 'Description', accessor: 'description' },
-	{ Header: 'Category', accessor: 'category', Cell: d => d.value ? (d.value as Category).name : "NOT SET" },
-	{ Header: 'Account', accessor: 'bankAccount', Cell: d => (d.value as BankAccount).name }
+	{
+		Header: 'Description',
+		accessor: 'description'
+	},
+	{
+		Header: 'Category',
+		width: 150,
+		accessor: 'category',
+		Cell: d => d.value ? (d.value as Category).name : "NOT SET"
+	},
+	{
+		Header: 'Account',
+		width: 100,
+		accessor: 'bankAccount',
+		Cell: d => (d.value as BankAccount).name
+	}
 ];
 
 interface State {
