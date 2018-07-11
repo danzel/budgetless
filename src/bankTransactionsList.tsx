@@ -61,7 +61,7 @@ const columns: Column[] = [
 		Header: 'Category',
 		width: 150,
 		accessor: 'category',
-		Cell: d => d.value ? (d.value as Category).name : "NOT SET"
+		Cell: d => d.value ? (d.value as Category).name : "Uncategorised"
 	},
 	{
 		Header: 'Account',
@@ -124,10 +124,8 @@ export class BankTransactionsList extends React.Component<{}, State> {
 				transactions: []
 			}, () => this.loadTransactions());
 		} else {
-			let a = this.state.selectedAccounts.slice();
-			a.push(account);
 			this.setState({
-				selectedAccounts: a,
+				selectedAccounts: [account, ...this.state.selectedAccounts],
 				transactions: []
 			}, () => this.loadTransactions());
 		}
@@ -151,9 +149,10 @@ export class BankTransactionsList extends React.Component<{}, State> {
 		let db = await this.database;
 
 		let where: FindConditions<BankTransaction> = {
-			bankAccount: In(this.state.accounts!.map(a => a.bankAccountId)),
+			bankAccount: In(this.state.selectedAccounts!.map(a => a.bankAccountId)),
 		};
 		if (this.state.selectedCategory.categoryId == everyCategory.categoryId) {
+			//No category filter
 		} else if (this.state.selectedCategory.categoryId == uncategorisedCategory.categoryId) {
 			where.category = IsNull();
 		} else {
