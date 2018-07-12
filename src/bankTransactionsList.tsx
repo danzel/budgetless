@@ -1,17 +1,17 @@
 import * as React from 'react';
 import { Navbar, NavbarGroup, Alignment, ButtonGroup, Button, MenuItem, Checkbox, Popover, Menu, PopoverInteractionKind, NavbarDivider } from '@blueprintjs/core';
 import { Select } from '@blueprintjs/select';
-import { BankAccount, Category, BankTransaction } from './entities';
+import { BankAccount, Category, BankTransaction, dateTransformer } from './entities';
 import { lazyInject, Services, Database } from './services';
 import ReactTable, { Column } from 'react-table';
 import * as dayjs from 'dayjs';
-import { In, IsNull, FindConditions } from 'typeorm';
+import { In, IsNull, FindConditions, Between } from 'typeorm';
 import * as commaNumber from 'comma-number';
 
 interface DateRange {
 	name: string;
-	start: dayjs.Dayjs;
-	end: dayjs.Dayjs;
+	start: () => dayjs.Dayjs;
+	end: () => dayjs.Dayjs;
 }
 
 let CategorySelect = Select.ofType<Category>();
@@ -22,10 +22,10 @@ const uncategorisedCategory = new Category("Uncategorised");
 uncategorisedCategory.categoryId = -2;
 
 const dateRanges = new Array<DateRange>(
-	{ name: 'This Month', start: dayjs().startOf('month'), end: dayjs().endOf('month') },
-	{ name: 'Last Month', start: dayjs().subtract(1, 'month').startOf('month'), end: dayjs().subtract(1, 'month').endOf('month') },
-	{ name: 'This Year', start: dayjs().startOf('year'), end: dayjs().endOf('year') },
-	{ name: 'Last Year', start: dayjs().subtract(1, 'year').startOf('year'), end: dayjs().subtract(1, 'year').endOf('year') },
+	{ name: 'This Month', start: () => dayjs().startOf('month'), end: () => dayjs().endOf('month') },
+	{ name: 'Last Month', start: () => dayjs().subtract(1, 'month').startOf('month'), end: () => dayjs().subtract(1, 'month').endOf('month') },
+	{ name: 'This Year', start: () => dayjs().startOf('year'), end: () => dayjs().endOf('year') },
+	{ name: 'Last Year', start: () => dayjs().subtract(1, 'year').startOf('year'), end: () => dayjs().subtract(1, 'year').endOf('year') },
 );
 
 const columns: Column[] = [
@@ -110,7 +110,7 @@ export class BankTransactionsList extends React.Component<{}, State> {
 			accounts,
 			categories: [everyCategory, uncategorisedCategory, ...categories],
 			selectedAccounts: accounts
-		})
+		}, () => this.loadTransactions());
 	}
 
 	private isAccountSelected(account: BankAccount): boolean {
@@ -150,6 +150,7 @@ export class BankTransactionsList extends React.Component<{}, State> {
 
 		let where: FindConditions<BankTransaction> = {
 			bankAccount: In(this.state.selectedAccounts!.map(a => a.bankAccountId)),
+			date: Between(dateTransformer.to(this.state.selectedDateRange.start()), dateTransformer.to(this.state.selectedDateRange.end())),
 		};
 		if (this.state.selectedCategory.categoryId == everyCategory.categoryId) {
 			//No category filter
