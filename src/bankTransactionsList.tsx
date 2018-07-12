@@ -1,12 +1,13 @@
 import * as React from 'react';
-import { Navbar, NavbarGroup, Alignment, ButtonGroup, Button, MenuItem, Checkbox, Popover, Menu, PopoverInteractionKind, NavbarDivider } from '@blueprintjs/core';
-import { Select } from '@blueprintjs/select';
+import { Navbar, NavbarGroup, Alignment, ButtonGroup, Button, MenuItem, Checkbox, Popover, Menu, PopoverInteractionKind, NavbarDivider, Intent, Position } from '@blueprintjs/core';
+import { Select, Suggest } from '@blueprintjs/select';
 import { BankAccount, Category, BankTransaction, dateTransformer } from './entities';
 import { lazyInject, Services, Database } from './services';
 import ReactTable, { Column } from 'react-table';
 import * as dayjs from 'dayjs';
 import { In, IsNull, FindConditions, Between } from 'typeorm';
 import * as commaNumber from 'comma-number';
+import { Transaction } from 'electron';
 
 interface DateRange {
 	name: string;
@@ -28,48 +29,6 @@ const dateRanges = new Array<DateRange>(
 	{ name: 'Last Year', start: () => dayjs().subtract(1, 'year').startOf('year'), end: () => dayjs().subtract(1, 'year').endOf('year') },
 );
 
-const columns: Column[] = [
-	{
-		Header: 'Date',
-		width: 90,
-		accessor: 'date',
-		Cell: d => (d.value as dayjs.Dayjs).format("YYYY-MM-DD")
-	},
-	{
-		Header: 'Amount',
-		width: 100,
-		accessor: 'amount',
-		className: 'amount',
-		Cell: d => {
-			let amount = (d.value as number);
-			let className = amount >= 0 ? 'income' : 'expense';
-			let amountStr = commaNumber(Math.abs(amount).toFixed(2));
-			if (amount > 0) {
-				amountStr = '+ ' + amountStr;
-			} else {
-				amountStr = '- ' + amountStr;
-			}
-
-			return <span className={className}>{amountStr} </span>
-		}
-	},
-	{
-		Header: 'Description',
-		accessor: 'description'
-	},
-	{
-		Header: 'Category',
-		width: 150,
-		accessor: 'category',
-		Cell: d => d.value ? (d.value as Category).name : "Uncategorised"
-	},
-	{
-		Header: 'Account',
-		width: 100,
-		accessor: 'bankAccount',
-		Cell: d => (d.value as BankAccount).name
-	}
-];
 
 interface State {
 	accounts?: BankAccount[];
@@ -80,8 +39,12 @@ interface State {
 	selectedDateRange: DateRange;
 
 	transactions: BankTransaction[];
+
+	createRuleCategory?: Category;
+	createRuleDescription?: string;
 }
 
+const ClickPropagationStopper = (props: any) => <span onClick={e => e.stopPropagation()}>{props.children}</span>;
 
 export class BankTransactionsList extends React.Component<{}, State> {
 	@lazyInject(Services.Database)
@@ -131,7 +94,7 @@ export class BankTransactionsList extends React.Component<{}, State> {
 		}
 	}
 
-	private selectCategory(c: Category) {
+	private selectFilterCategory(c: Category) {
 		this.setState({
 			selectedCategory: c,
 			transactions: []
@@ -143,6 +106,37 @@ export class BankTransactionsList extends React.Component<{}, State> {
 			selectedDateRange: dateRange,
 			transactions: []
 		}, () => this.loadTransactions());
+	}
+
+	private prepareForCategoryPopover(category: Category, transaction: BankTransaction) {
+		this.setState({
+			createRuleCategory: category,
+			createRuleDescription: transaction.description
+		})
+	}
+
+	private addRule() {
+		alert('TODO - createRuleCategory, createRuleDescription - and apply it');
+	}
+
+	private async setTransactionCategory(t: BankTransaction, category: Category) {
+		//recreate it so we can replace it in the react state
+		let recreated = new BankTransaction(t.bankAccount, category, t.date, t.amount, t.description, t.balance);
+		recreated.bankTransactionId = t.bankTransactionId;
+		recreated.calculatedBalance = t.calculatedBalance;
+		recreated.userNote = t.userNote;
+
+		if (category.categoryId == uncategorisedCategory.categoryId) {
+			recreated.category = null;
+		}
+
+		let db = await this.database;
+		await db.transactions.save(recreated);
+
+		//Replace the item with the new one
+		this.setState({
+			transactions: this.state.transactions.map(st => st == t ? recreated : st)
+		});
 	}
 
 	private async loadTransactions() {
@@ -178,7 +172,8 @@ export class BankTransactionsList extends React.Component<{}, State> {
 	}
 
 	render() {
-		if (!this.state.accounts || !this.state.categories) {
+		const categories = this.state.categories;
+		if (!this.state.accounts || !categories) {
 			return <div>Loading</div>;
 		}
 
@@ -191,6 +186,71 @@ export class BankTransactionsList extends React.Component<{}, State> {
 			}
 		}
 
+		const columns: Column[] = [
+			{
+				Header: 'Date',
+				width: 90,
+				accessor: 'date',
+				Cell: d => (d.value as dayjs.Dayjs).format("YYYY-MM-DD")
+			},
+			{
+				Header: 'Amount',
+				width: 100,
+				accessor: 'amount',
+				className: 'amount',
+				Cell: d => {
+					let amount = (d.value as number);
+					let className = amount >= 0 ? 'income' : 'expense';
+					let amountStr = commaNumber(Math.abs(amount).toFixed(2));
+					if (amount > 0) {
+						amountStr = '+ ' + amountStr;
+					} else {
+						amountStr = '- ' + amountStr;
+					}
+
+					return <span className={className}>{amountStr} </span>
+				}
+			},
+			{
+				Header: 'Description',
+				accessor: 'description'
+			},
+			{
+				Header: 'Category',
+				width: 150,
+				accessor: 'category',
+				Cell: d => <CategorySelect
+					items={categories} //TODO: This shouldn't include the "Everything" item
+					itemPredicate={(filter, c) => c.name.toLocaleLowerCase().includes(filter.toLocaleLowerCase())}
+					itemRenderer={(c, p) => <MenuItem
+						active={p.modifiers.active}
+						disabled={p.modifiers.disabled}
+						key={c.categoryId}
+						text={c.name}
+						onClick={p.handleClick}
+						labelElement={<ClickPropagationStopper><Popover modifiers={{ hide: { enabled: false }, preventOverflow: { enabled: false } }} position={Position.BOTTOM_RIGHT} popoverWillOpen={() => this.prepareForCategoryPopover(c, d.original)}>
+							<Button icon="automatic-updates" title="Create an automatic rule" />
+							<div style={{ padding: 20 }}>
+								<h5>Automatic Rule</h5>
+								Automatically assign category when description matches <br />
+								<div>
+									<input className="pt-input pt-fill" value={this.state.createRuleDescription} onChange={e => this.setState({ createRuleDescription: e.currentTarget.value })} />
+									<Button intent={Intent.PRIMARY} text="Add Rule" onClick={() => this.addRule()} />
+								</div>
+							</div>
+						</Popover></ClickPropagationStopper>} />}
+					onItemSelect={c => this.setTransactionCategory(d.original, c)}
+				>
+					<Button text={(d.value ? d.value.name : "Uncategorised")} />
+				</CategorySelect>
+			},
+			{
+				Header: 'Account',
+				width: 100,
+				accessor: 'bankAccount',
+				Cell: d => (d.value as BankAccount).name
+			}
+		];
 		return <div className="bank-transactions-list">
 			<Navbar>
 				<NavbarGroup align={Alignment.LEFT}>
@@ -228,10 +288,10 @@ export class BankTransactionsList extends React.Component<{}, State> {
 					<NavbarDivider />
 
 					<CategorySelect
-						items={this.state.categories}
+						items={categories}
 						itemPredicate={(filter, c) => c.name.toLocaleLowerCase().includes(filter.toLocaleLowerCase())}
 						itemRenderer={(c, p) => <MenuItem active={p.modifiers.active} disabled={p.modifiers.disabled} key={c.categoryId} text={c.name} onClick={p.handleClick} />}
-						onItemSelect={c => this.selectCategory(c)}
+						onItemSelect={c => this.selectFilterCategory(c)}
 					>
 						<Button text={this.state.selectedCategory.name} icon="tag" />
 					</CategorySelect>

@@ -28,7 +28,7 @@ export class BankTransaction {
 	bankAccount: BankAccount;
 
 	@ManyToOne(type => Category, cat => cat.transactions, { onDelete: 'SET NULL' })
-	category?: Category;
+	category: Category | null;
 
 	//The date this transaction occurred
 	@Column('text', {
@@ -61,12 +61,12 @@ export class BankTransaction {
 	@Column()
 	userNote: string;
 
-	constructor(bankAccount: BankAccount, category: Category | undefined, date: dayjs.Dayjs, amount: number, note: string, balance: number | null) {
+	constructor(bankAccount: BankAccount, category: Category | undefined, date: dayjs.Dayjs, amount: number, description: string, balance: number | null) {
 		this.bankAccount = bankAccount;
 		this.category = category;
 		this.date = date;
 		this.amount = amount;
-		this.description = note;
+		this.description = description;
 
 		this.balance = balance;
 		this.calculatedBalance = balance;
