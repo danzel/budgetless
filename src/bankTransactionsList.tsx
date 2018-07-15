@@ -21,6 +21,8 @@ const everyCategory = new Category("Everything");
 everyCategory.categoryId = -1;
 const uncategorisedCategory = new Category("Uncategorised");
 uncategorisedCategory.categoryId = -2;
+const addCategory = new Category("+");
+addCategory.categoryId = -3;
 
 const dateRanges = new Array<DateRange>(
 	{ name: 'This Month', start: () => dayjs().startOf('month'), end: () => dayjs().endOf('month') },
@@ -32,6 +34,8 @@ const dateRanges = new Array<DateRange>(
 
 interface State {
 	accounts?: BankAccount[];
+
+	allCategories?: Category[];
 	categoriesForFilter?: Category[];
 	categoriesForSelecting?: Category[];
 
@@ -79,8 +83,9 @@ export class BankTransactionsList extends React.Component<{}, State> {
 
 		this.setState({
 			accounts,
+			allCategories: categories,
 			categoriesForFilter: [everyCategory, uncategorisedCategory, ...categories],
-			categoriesForSelecting: [uncategorisedCategory, ...categories],
+			categoriesForSelecting: [uncategorisedCategory, ...categories, addCategory],
 			selectedAccounts: accounts
 		}, () => this.loadTransactions());
 	}
@@ -136,6 +141,7 @@ export class BankTransactionsList extends React.Component<{}, State> {
 	}
 
 	private async addRule() {
+
 		let rule = new CategoryRule(this.state.createRuleCategory!, this.state.createRuleDescription!);
 		if (!rule.matches(this.state.createRuleTransaction!)) {
 			this.toaster.show({
@@ -147,6 +153,11 @@ export class BankTransactionsList extends React.Component<{}, State> {
 
 		let db = await this.database;
 
+		//Need to create the category
+		if (rule.category.categoryId == addCategory.categoryId) {
+			rule.category = await this.addCategory(rule.category.name);
+		}
+		
 		//Remove the existing category from the selected transaction so it gets applied
 		this.state.createRuleTransaction!.category = null;
 		await db.transactions.save(this.state.createRuleTransaction!)
@@ -195,6 +206,25 @@ export class BankTransactionsList extends React.Component<{}, State> {
 		this.setState({
 			transactions: this.state.transactions.map(st => st == t ? recreated : st)
 		});
+	}
+
+	private async addCategory(categoryName: string): Promise<Category> {
+		let category = new Category(categoryName);
+		await (await this.database).categories.save(category);
+
+		let categories = [category].concat(this.state.allCategories!).sort((a, b) => a.name.localeCompare(b.name));
+
+		this.setState({
+			allCategories: categories,
+			categoriesForFilter: [everyCategory, uncategorisedCategory, ...categories],
+			categoriesForSelecting: [uncategorisedCategory, ...categories, addCategory]
+		})
+
+		return category;
+	}
+
+	private async addAndSetCategory(t: BankTransaction, categoryName: string) {
+		await this.setTransactionCategory(t, await this.addCategory(categoryName));
 	}
 
 	private async loadTransactions() {
@@ -280,12 +310,14 @@ export class BankTransactionsList extends React.Component<{}, State> {
 				Cell: d => <CategorySelect
 					disabled={this.state.disableAllTableSelects}
 					items={categoriesForSelecting}
-					itemPredicate={(filter, c) => c.name.toLocaleLowerCase().includes(filter.toLocaleLowerCase())}
-					itemRenderer={(c, p) => <MenuItem
+					onQueryChange={q => addCategory.name = q}
+					itemPredicate={(filter, c) => c.categoryId == addCategory.categoryId || c.name.toLocaleLowerCase().includes(filter.toLocaleLowerCase())}
+					itemRenderer={(c, p) => p.query == '' && c.categoryId == addCategory.categoryId ? <span key={c.categoryId} style={{display: 'none'}} /> : <MenuItem
 						active={p.modifiers.active}
 						disabled={p.modifiers.disabled}
 						key={c.categoryId}
-						text={c.name}
+						icon={c.categoryId == addCategory.categoryId ? 'add' : undefined}
+						text={c.categoryId == addCategory.categoryId ? p.query : c.name}
 						onClick={p.handleClick}
 						labelElement={c.categoryId == uncategorisedCategory.categoryId ? undefined : <ClickPropagationStopper><Popover modifiers={{ hide: { enabled: false }, preventOverflow: { enabled: false } }} position={Position.BOTTOM_RIGHT} popoverWillOpen={() => this.prepareForCategoryPopover(c, d.original)}>
 							<Button icon="automatic-updates" title="Create an automatic rule" />
@@ -298,7 +330,7 @@ export class BankTransactionsList extends React.Component<{}, State> {
 								</div>
 							</div>
 						</Popover></ClickPropagationStopper>} />}
-					onItemSelect={c => this.setTransactionCategory(d.original, c)}
+					onItemSelect={c => c.categoryId == addCategory.categoryId ? this.addAndSetCategory(d.original, c.name) : this.setTransactionCategory(d.original, c)}
 				>
 					<Button text={(d.value ? d.value.name : "Uncategorised")} />
 				</CategorySelect>
