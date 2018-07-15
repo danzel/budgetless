@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Navbar, NavbarGroup, Alignment, ButtonGroup, Button, MenuItem, Checkbox, Popover, Menu, PopoverInteractionKind, NavbarDivider, Intent, Position } from '@blueprintjs/core';
+import { Navbar, NavbarGroup, Alignment, ButtonGroup, Button, MenuItem, Checkbox, Popover, Menu, PopoverInteractionKind, NavbarDivider, Intent, Position, Toaster } from '@blueprintjs/core';
 import { Select, Suggest } from '@blueprintjs/select';
 import { BankAccount, Category, BankTransaction, dateTransformer, CategoryRule } from './entities';
 import { lazyInject, Services, Database, ImportHelper } from './services';
@@ -41,8 +41,11 @@ interface State {
 
 	transactions: BankTransaction[];
 
+	disableAllTableSelects: boolean;
+
 	createRuleCategory?: Category;
 	createRuleDescription?: string;
+	createRuleTransaction?: BankTransaction;
 }
 
 const ClickPropagationStopper = (props: any) => <span onClick={e => e.stopPropagation()}>{props.children}</span>;
@@ -51,6 +54,9 @@ export class BankTransactionsList extends React.Component<{}, State> {
 	@lazyInject(Services.Database)
 	database!: Promise<Database>;
 
+	@lazyInject(Services.Toaster)
+	private toaster!: Toaster;
+
 	constructor(props: {}) {
 		super(props);
 
@@ -58,7 +64,8 @@ export class BankTransactionsList extends React.Component<{}, State> {
 			selectedAccounts: [],
 			selectedCategory: everyCategory,
 			selectedDateRange: dateRanges[0],
-			transactions: []
+			transactions: [],
+			disableAllTableSelects: false
 		};
 
 		this.load();
@@ -123,19 +130,33 @@ export class BankTransactionsList extends React.Component<{}, State> {
 
 		this.setState({
 			createRuleCategory: category,
-			createRuleDescription: desc
+			createRuleDescription: desc,
+			createRuleTransaction: transaction,
 		})
 	}
 
 	private async addRule() {
+		let rule = new CategoryRule(this.state.createRuleCategory!, this.state.createRuleDescription!);
+		if (!rule.matches(this.state.createRuleTransaction!)) {
+			this.toaster.show({
+				intent: Intent.DANGER,
+				message: "This rule doesn't match this transaction"
+			});
+			return;
+		}
+
 		let db = await this.database;
 
-		let rule = new CategoryRule(this.state.createRuleCategory!, this.state.createRuleDescription!);
+		//Remove the existing category from the selected transaction so it gets applied
+		this.state.createRuleTransaction!.category = null;
+		await db.transactions.save(this.state.createRuleTransaction!)
+
 		await db.rules.save(rule);
 
 		this.setState({
 			createRuleCategory: undefined,
-			createRuleDescription: undefined
+			createRuleDescription: undefined,
+			createRuleTransaction: undefined
 		});
 
 		let changed = await new ImportHelper(this.database).applyRuleToDatabase(rule);
@@ -151,8 +172,9 @@ export class BankTransactionsList extends React.Component<{}, State> {
 			return t;
 		});
 		this.setState({
-			transactions: updatedTransactions
-		});
+			transactions: updatedTransactions,
+			disableAllTableSelects: true //Hack to close the select
+		}, () => this.setState({ disableAllTableSelects: false }));
 	}
 
 	private async setTransactionCategory(t: BankTransaction, category: Category) {
@@ -200,7 +222,6 @@ export class BankTransactionsList extends React.Component<{}, State> {
 				date: 'DESC'
 			}
 		});
-		console.log(transactions.length);
 
 		this.setState({
 			transactions
@@ -257,6 +278,7 @@ export class BankTransactionsList extends React.Component<{}, State> {
 				width: 150,
 				accessor: 'category',
 				Cell: d => <CategorySelect
+					disabled={this.state.disableAllTableSelects}
 					items={categoriesForSelecting}
 					itemPredicate={(filter, c) => c.name.toLocaleLowerCase().includes(filter.toLocaleLowerCase())}
 					itemRenderer={(c, p) => <MenuItem
@@ -265,7 +287,7 @@ export class BankTransactionsList extends React.Component<{}, State> {
 						key={c.categoryId}
 						text={c.name}
 						onClick={p.handleClick}
-						labelElement={<ClickPropagationStopper><Popover modifiers={{ hide: { enabled: false }, preventOverflow: { enabled: false } }} position={Position.BOTTOM_RIGHT} popoverWillOpen={() => this.prepareForCategoryPopover(c, d.original)}>
+						labelElement={c.categoryId == uncategorisedCategory.categoryId ? undefined : <ClickPropagationStopper><Popover modifiers={{ hide: { enabled: false }, preventOverflow: { enabled: false } }} position={Position.BOTTOM_RIGHT} popoverWillOpen={() => this.prepareForCategoryPopover(c, d.original)}>
 							<Button icon="automatic-updates" title="Create an automatic rule" />
 							<div style={{ padding: 20 }}>
 								<h5>Automatic Rule</h5>
