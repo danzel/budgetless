@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { Navbar, NavbarGroup, Alignment, ButtonGroup, Button, MenuItem, Checkbox, Popover, Menu, PopoverInteractionKind, NavbarDivider, Intent, Position } from '@blueprintjs/core';
 import { Select, Suggest } from '@blueprintjs/select';
-import { BankAccount, Category, BankTransaction, dateTransformer } from './entities';
-import { lazyInject, Services, Database } from './services';
+import { BankAccount, Category, BankTransaction, dateTransformer, CategoryRule } from './entities';
+import { lazyInject, Services, Database, ImportHelper } from './services';
 import ReactTable, { Column } from 'react-table';
 import * as dayjs from 'dayjs';
 import { In, IsNull, FindConditions, Between } from 'typeorm';
@@ -32,7 +32,8 @@ const dateRanges = new Array<DateRange>(
 
 interface State {
 	accounts?: BankAccount[];
-	categories?: Category[];
+	categoriesForFilter?: Category[];
+	categoriesForSelecting?: Category[];
 
 	selectedAccounts: BankAccount[];
 	selectedCategory: Category;
@@ -71,7 +72,8 @@ export class BankTransactionsList extends React.Component<{}, State> {
 
 		this.setState({
 			accounts,
-			categories: [everyCategory, uncategorisedCategory, ...categories],
+			categoriesForFilter: [everyCategory, uncategorisedCategory, ...categories],
+			categoriesForSelecting: [uncategorisedCategory, ...categories],
 			selectedAccounts: accounts
 		}, () => this.loadTransactions());
 	}
@@ -109,14 +111,48 @@ export class BankTransactionsList extends React.Component<{}, State> {
 	}
 
 	private prepareForCategoryPopover(category: Category, transaction: BankTransaction) {
+		let desc = transaction.description;
+
+		//If it has a time at the end, remove it
+		if (desc.match(/-\d\d:\d\d ;$/)) {
+			desc = desc.substr(0, desc.length - 8);
+		}
+		if (desc.endsWith(' ;')) {
+			desc = desc.substr(0, desc.length - 2);
+		}
+
 		this.setState({
 			createRuleCategory: category,
-			createRuleDescription: transaction.description
+			createRuleDescription: desc
 		})
 	}
 
-	private addRule() {
-		alert('TODO - createRuleCategory, createRuleDescription - and apply it');
+	private async addRule() {
+		let db = await this.database;
+
+		let rule = new CategoryRule(this.state.createRuleCategory!, this.state.createRuleDescription!);
+		await db.rules.save(rule);
+
+		this.setState({
+			createRuleCategory: undefined,
+			createRuleDescription: undefined
+		});
+
+		let changed = await new ImportHelper(this.database).applyRuleToDatabase(rule);
+
+		//Update the currently loaded transactions
+		let updatedTransactions = this.state.transactions.map(t => {
+			let matched = changed.find(tx => t.bankTransactionId == tx.bankTransactionId);
+
+			if (matched) {
+				matched.bankAccount = t.bankAccount; //This isn't loaded in applyRule, so copy it over
+				return matched;
+			}
+			return t;
+		});
+		this.setState({
+			transactions: updatedTransactions
+		});
 	}
 
 	private async setTransactionCategory(t: BankTransaction, category: Category) {
@@ -172,8 +208,9 @@ export class BankTransactionsList extends React.Component<{}, State> {
 	}
 
 	render() {
-		const categories = this.state.categories;
-		if (!this.state.accounts || !categories) {
+		const categoriesForFilter = this.state.categoriesForFilter;
+		const categoriesForSelecting = this.state.categoriesForSelecting;
+		if (!this.state.accounts || !categoriesForFilter || !categoriesForSelecting) {
 			return <div>Loading</div>;
 		}
 
@@ -220,7 +257,7 @@ export class BankTransactionsList extends React.Component<{}, State> {
 				width: 150,
 				accessor: 'category',
 				Cell: d => <CategorySelect
-					items={categories} //TODO: This shouldn't include the "Everything" item
+					items={categoriesForSelecting}
 					itemPredicate={(filter, c) => c.name.toLocaleLowerCase().includes(filter.toLocaleLowerCase())}
 					itemRenderer={(c, p) => <MenuItem
 						active={p.modifiers.active}
@@ -288,7 +325,7 @@ export class BankTransactionsList extends React.Component<{}, State> {
 					<NavbarDivider />
 
 					<CategorySelect
-						items={categories}
+						items={categoriesForFilter}
 						itemPredicate={(filter, c) => c.name.toLocaleLowerCase().includes(filter.toLocaleLowerCase())}
 						itemRenderer={(c, p) => <MenuItem active={p.modifiers.active} disabled={p.modifiers.disabled} key={c.categoryId} text={c.name} onClick={p.handleClick} />}
 						onItemSelect={c => this.selectFilterCategory(c)}

@@ -1,6 +1,6 @@
 import { ParseResult, ParseTransaction } from './parseResult';
 import { Database } from './database';
-import { Between } from 'typeorm';
+import { Between, Raw } from 'typeorm';
 import { dateTransformer, BankTransaction, CategoryRule } from '../entities';
 
 export interface DupeCheckResult {
@@ -82,5 +82,22 @@ export class ImportHelper {
 		})
 
 		return res;
+	}
+
+	/** Applies the given rule to all matching transactions in the database, returning the transactions that match */
+	async applyRuleToDatabase(rule: CategoryRule): Promise<BankTransaction[]> {
+		let db = await this.databasePromise;
+
+		let matching = await db.transactions.createQueryBuilder("tx")
+			.where("lower(tx.description) LIKE lower(:rule)", { rule: '%' + rule.descriptionContains + '%' })
+			.andWhere("tx.category IS NULL")
+			.getMany();
+
+		console.log(matching.length);
+		matching.forEach(m => m.category = rule.category);
+
+		await db.transactions.save(matching);
+
+		return matching;
 	}
 }
