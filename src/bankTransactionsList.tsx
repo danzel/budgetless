@@ -11,8 +11,8 @@ import { Transaction } from 'electron';
 
 interface DateRange {
 	name: string;
-	start: () => dayjs.Dayjs;
-	end: () => dayjs.Dayjs;
+	start: () => dayjs.Dayjs | null;
+	end: () => dayjs.Dayjs | null;
 }
 
 let CategorySelect = Select.ofType<Category>();
@@ -29,6 +29,7 @@ const dateRanges = new Array<DateRange>(
 	{ name: 'Last Month', start: () => dayjs().subtract(1, 'month').startOf('month'), end: () => dayjs().subtract(1, 'month').endOf('month') },
 	{ name: 'This Year', start: () => dayjs().startOf('year'), end: () => dayjs().endOf('year') },
 	{ name: 'Last Year', start: () => dayjs().subtract(1, 'year').startOf('year'), end: () => dayjs().subtract(1, 'year').endOf('year') },
+	{ name: 'All Time', start: () => null, end: () => null }
 );
 
 
@@ -250,9 +251,15 @@ export class BankTransactionsList extends React.Component<{}, State> {
 		let db = await this.database;
 
 		let where: FindConditions<BankTransaction> = {
-			bankAccount: In(this.state.selectedAccounts!.map(a => a.bankAccountId)),
-			date: Between(dateTransformer.to(this.state.selectedDateRange.start()), dateTransformer.to(this.state.selectedDateRange.end())),
+			bankAccount: In(this.state.selectedAccounts!.map(a => a.bankAccountId))
 		};
+
+		let start = this.state.selectedDateRange.start();
+		let end = this.state.selectedDateRange.end();
+		if (start && end) {
+			where.date = Between(dateTransformer.to(start), dateTransformer.to(end));
+		}
+
 		if (this.state.selectedCategory.categoryId == everyCategory.categoryId) {
 			//No category filter
 		} else if (this.state.selectedCategory.categoryId == uncategorisedCategory.categoryId) {
