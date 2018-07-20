@@ -4,6 +4,12 @@ html, body, #app, .full-height {
 
 
 .bank-transactions-list {
+	height: calc(100% - 100px); //Leave room for 2 navbars
+
+	.ReactTable {
+		height: 100%;
+	}
+	
 	.amount {
 		text-align: right;
 

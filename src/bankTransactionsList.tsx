@@ -50,6 +50,8 @@ interface State {
 	createRuleCategory?: Category;
 	createRuleDescription?: string;
 	createRuleTransaction?: BankTransaction;
+
+	windowHeight: number;
 }
 
 const ClickPropagationStopper = (props: any) => <span onClick={e => e.stopPropagation()}>{props.children}</span>;
@@ -64,15 +66,32 @@ export class BankTransactionsList extends React.Component<{}, State> {
 	constructor(props: {}) {
 		super(props);
 
+		this.resizeListener = this.resizeListener.bind(this);
+
 		this.state = {
 			selectedAccounts: [],
 			selectedCategory: everyCategory,
 			selectedDateRange: dateRanges[0],
 			transactions: [],
-			disableAllTableSelects: false
+			disableAllTableSelects: false,
+			windowHeight: window.innerHeight
 		};
 
 		this.load();
+	}
+
+	componentDidMount() {
+		window.addEventListener('resize', this.resizeListener);
+	}
+
+	componentWillUnmount() {
+		window.removeEventListener('resize', this.resizeListener);
+	}
+
+	private resizeListener() {
+		this.setState({
+			windowHeight: window.innerHeight
+		})
 	}
 
 	private async load() {
@@ -393,6 +412,11 @@ export class BankTransactionsList extends React.Component<{}, State> {
 			<ReactTable
 				data={this.state.transactions}
 				columns={columns}
+				//https://github.com/react-tools/react-table/issues/552
+				key={this.state.windowHeight}
+				defaultPageSize={Math.floor((this.state.windowHeight - 100 - 29 - 47) / 45) }
+				PadRowComponent={() => <div style={{height:30}} />}
+				showPageSizeOptions={false}
 			/>
 		</div>;
 	}
