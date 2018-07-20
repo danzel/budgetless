@@ -1,36 +1,16 @@
 import * as React from 'react';
-import { Navbar, NavbarGroup, Alignment, ButtonGroup, Button, MenuItem, Checkbox, Popover, Menu, PopoverInteractionKind, NavbarDivider, Intent, Position, Toaster } from '@blueprintjs/core';
-import { Select, Suggest } from '@blueprintjs/select';
-import { BankAccount, Category, BankTransaction, dateTransformer, CategoryRule } from './entities';
+import { Button, MenuItem, Popover, Intent, Position, Toaster } from '@blueprintjs/core';
+import { Select } from '@blueprintjs/select';
+import { BankAccount, Category, BankTransaction, dateTransformer, CategoryRule, AddCategory, UncategorisedCategory, EveryCategory } from './entities';
 import { lazyInject, Services, Database, ImportHelper } from './services';
 import ReactTable, { Column } from 'react-table';
 import * as dayjs from 'dayjs';
 import { In, IsNull, FindConditions, Between } from 'typeorm';
 import * as commaNumber from 'comma-number';
-import { Transaction } from 'electron';
-
-interface DateRange {
-	name: string;
-	start: () => dayjs.Dayjs | null;
-	end: () => dayjs.Dayjs | null;
-}
+import { DateRange, FilterBar, DateRanges } from './components/filterBar';
 
 let CategorySelect = Select.ofType<Category>();
 
-const everyCategory = new Category("Everything");
-everyCategory.categoryId = -1;
-const uncategorisedCategory = new Category("Uncategorised");
-uncategorisedCategory.categoryId = -2;
-const addCategory = new Category("+");
-addCategory.categoryId = -3;
-
-const dateRanges = new Array<DateRange>(
-	{ name: 'This Month', start: () => dayjs().startOf('month'), end: () => dayjs().endOf('month') },
-	{ name: 'Last Month', start: () => dayjs().subtract(1, 'month').startOf('month'), end: () => dayjs().subtract(1, 'month').endOf('month') },
-	{ name: 'This Year', start: () => dayjs().startOf('year'), end: () => dayjs().endOf('year') },
-	{ name: 'Last Year', start: () => dayjs().subtract(1, 'year').startOf('year'), end: () => dayjs().subtract(1, 'year').endOf('year') },
-	{ name: 'All Time', start: () => null, end: () => null }
-);
 
 
 interface State {
@@ -71,8 +51,8 @@ export class BankTransactionsList extends React.Component<{}, State> {
 
 		this.state = {
 			selectedAccounts: [],
-			selectedCategory: everyCategory,
-			selectedDateRange: dateRanges[0],
+			selectedCategory: EveryCategory,
+			selectedDateRange: DateRanges[0],
 			transactions: [],
 			disableAllTableSelects: false,
 			windowHeight: window.innerHeight
@@ -104,14 +84,10 @@ export class BankTransactionsList extends React.Component<{}, State> {
 		this.setState({
 			accounts,
 			allCategories: categories,
-			categoriesForFilter: [everyCategory, uncategorisedCategory, ...categories],
-			categoriesForSelecting: [uncategorisedCategory, ...categories, addCategory],
+			categoriesForFilter: [EveryCategory, UncategorisedCategory, ...categories],
+			categoriesForSelecting: [UncategorisedCategory, ...categories, AddCategory],
 			selectedAccounts: accounts
 		}, () => this.loadTransactions());
-	}
-
-	private isAccountSelected(account: BankAccount): boolean {
-		return this.state.selectedAccounts.some(a => a == account);
 	}
 
 	private toggleAccount(account: BankAccount) {
@@ -174,7 +150,7 @@ export class BankTransactionsList extends React.Component<{}, State> {
 		let db = await this.database;
 
 		//Need to create the category
-		if (rule.category.categoryId == addCategory.categoryId) {
+		if (rule.category.categoryId == AddCategory.categoryId) {
 			rule.category = await this.addCategory(rule.category.name);
 		}
 		
@@ -215,7 +191,7 @@ export class BankTransactionsList extends React.Component<{}, State> {
 		recreated.calculatedBalance = t.calculatedBalance;
 		recreated.userNote = t.userNote;
 
-		if (category.categoryId == uncategorisedCategory.categoryId) {
+		if (category.categoryId == UncategorisedCategory.categoryId) {
 			recreated.category = null;
 		}
 
@@ -236,8 +212,8 @@ export class BankTransactionsList extends React.Component<{}, State> {
 
 		this.setState({
 			allCategories: categories,
-			categoriesForFilter: [everyCategory, uncategorisedCategory, ...categories],
-			categoriesForSelecting: [uncategorisedCategory, ...categories, addCategory]
+			categoriesForFilter: [EveryCategory, UncategorisedCategory, ...categories],
+			categoriesForSelecting: [UncategorisedCategory, ...categories, AddCategory]
 		})
 
 		return category;
@@ -260,9 +236,9 @@ export class BankTransactionsList extends React.Component<{}, State> {
 			where.date = Between(dateTransformer.to(start), dateTransformer.to(end));
 		}
 
-		if (this.state.selectedCategory.categoryId == everyCategory.categoryId) {
+		if (this.state.selectedCategory.categoryId == EveryCategory.categoryId) {
 			//No category filter
-		} else if (this.state.selectedCategory.categoryId == uncategorisedCategory.categoryId) {
+		} else if (this.state.selectedCategory.categoryId == UncategorisedCategory.categoryId) {
 			where.category = IsNull();
 		} else {
 			where.category = this.state.selectedCategory;
@@ -289,15 +265,6 @@ export class BankTransactionsList extends React.Component<{}, State> {
 		const categoriesForSelecting = this.state.categoriesForSelecting;
 		if (!this.state.accounts || !categoriesForFilter || !categoriesForSelecting) {
 			return <div>Loading</div>;
-		}
-
-		let accountsButtonText = "All Accounts Selected";
-		if (this.state.accounts.length != this.state.selectedAccounts.length) {
-			if (this.state.selectedAccounts.length == 1) {
-				accountsButtonText = this.state.selectedAccounts[0].name;
-			} else {
-				accountsButtonText = this.state.selectedAccounts.length + " Accounts Selected";
-			}
 		}
 
 		const columns: Column[] = [
@@ -336,16 +303,16 @@ export class BankTransactionsList extends React.Component<{}, State> {
 				Cell: d => <CategorySelect
 					disabled={this.state.disableAllTableSelects}
 					items={categoriesForSelecting}
-					onQueryChange={q => addCategory.name = q}
-					itemPredicate={(filter, c) => c.categoryId == addCategory.categoryId || c.name.toLocaleLowerCase().includes(filter.toLocaleLowerCase())}
-					itemRenderer={(c, p) => p.query == '' && c.categoryId == addCategory.categoryId ? <span key={c.categoryId} style={{display: 'none'}} /> : <MenuItem
+					onQueryChange={q => AddCategory.name = q}
+					itemPredicate={(filter, c) => c.categoryId == AddCategory.categoryId || c.name.toLocaleLowerCase().includes(filter.toLocaleLowerCase())}
+					itemRenderer={(c, p) => p.query == '' && c.categoryId == AddCategory.categoryId ? <span key={c.categoryId} style={{display: 'none'}} /> : <MenuItem
 						active={p.modifiers.active}
 						disabled={p.modifiers.disabled}
 						key={c.categoryId}
-						icon={c.categoryId == addCategory.categoryId ? 'add' : undefined}
-						text={c.categoryId == addCategory.categoryId ? p.query : c.name}
+						icon={c.categoryId == AddCategory.categoryId ? 'add' : undefined}
+						text={c.categoryId == AddCategory.categoryId ? p.query : c.name}
 						onClick={p.handleClick}
-						labelElement={c.categoryId == uncategorisedCategory.categoryId ? undefined : <ClickPropagationStopper><Popover modifiers={{ hide: { enabled: false }, preventOverflow: { enabled: false } }} position={Position.BOTTOM_RIGHT} popoverWillOpen={() => this.prepareForCategoryPopover(c, d.original)}>
+						labelElement={c.categoryId == UncategorisedCategory.categoryId ? undefined : <ClickPropagationStopper><Popover modifiers={{ hide: { enabled: false }, preventOverflow: { enabled: false } }} position={Position.BOTTOM_RIGHT} popoverWillOpen={() => this.prepareForCategoryPopover(c, d.original)}>
 							<Button icon="automatic-updates" title="Create an automatic rule" />
 							<div style={{ padding: 20 }}>
 								<h5>Automatic Rule</h5>
@@ -356,7 +323,7 @@ export class BankTransactionsList extends React.Component<{}, State> {
 								</div>
 							</div>
 						</Popover></ClickPropagationStopper>} />}
-					onItemSelect={c => c.categoryId == addCategory.categoryId ? this.addAndSetCategory(d.original, c.name) : this.setTransactionCategory(d.original, c)}
+					onItemSelect={c => c.categoryId == AddCategory.categoryId ? this.addAndSetCategory(d.original, c.name) : this.setTransactionCategory(d.original, c)}
 				>
 					<Button text={(d.value ? d.value.name : "Uncategorised")} />
 				</CategorySelect>
@@ -369,52 +336,7 @@ export class BankTransactionsList extends React.Component<{}, State> {
 			}
 		];
 		return <div className="bank-transactions-list">
-			<Navbar>
-				<NavbarGroup align={Alignment.LEFT}>
-
-					<ButtonGroup>
-						<Button icon="chevron-left" />
-						<Popover>
-							<Button icon="calendar" text={this.state.selectedDateRange.name} />
-							<Menu>
-								{dateRanges.map(d => <MenuItem
-									key={d.name}
-									text={d.name}
-									onClick={() => this.selectDateRange(d)}
-								/>
-								)}
-							</Menu>
-						</Popover>
-						<Button icon="chevron-right" />
-					</ButtonGroup>
-
-					<NavbarDivider />
-
-					<Popover>
-						<Button icon="bank-account" text={accountsButtonText} />
-						<Menu>
-							{this.state.accounts.map(a => <MenuItem
-								shouldDismissPopover={false}
-								key={a.bankAccountId}
-								text={a.name}
-								icon={this.isAccountSelected(a) ? "tick" : "blank"}
-								onClick={() => this.toggleAccount(a)} />)}
-						</Menu>
-					</Popover>
-
-					<NavbarDivider />
-
-					<CategorySelect
-						items={categoriesForFilter}
-						itemPredicate={(filter, c) => c.name.toLocaleLowerCase().includes(filter.toLocaleLowerCase())}
-						itemRenderer={(c, p) => <MenuItem active={p.modifiers.active} disabled={p.modifiers.disabled} key={c.categoryId} text={c.name} onClick={p.handleClick} />}
-						onItemSelect={c => this.selectFilterCategory(c)}
-					>
-						<Button text={this.state.selectedCategory.name} icon="tag" />
-					</CategorySelect>
-
-				</NavbarGroup>
-			</Navbar>
+			<FilterBar accounts={this.state.accounts} categories={categoriesForFilter} selectDateRange={(d) => this.selectDateRange(d)} selectedAccounts={this.state.selectedAccounts} selectedCategory={this.state.selectedCategory} selectedDateRange={this.state.selectedDateRange} selectFilterCategory={(c) => this.selectFilterCategory(c)} toggleAccount={(a) => this.toggleAccount(a)}  />
 
 			<ReactTable
 				data={this.state.transactions}
