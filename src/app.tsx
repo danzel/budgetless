@@ -9,6 +9,7 @@ import { BankTransactionsList } from './bankTransactionsList';
 import { ManageAccounts } from './manageAccounts';
 import { ManageCategories } from './manageCategories';
 import { ManageRules } from './manageRules';
+import { Reports } from './reports';
 
 interface State {
 }
@@ -44,6 +45,7 @@ class App extends React.Component<{}, State>{
 					</NavbarGroup>
 					<NavbarGroup align={Alignment.RIGHT}>
 						<Link role="button" to='/' className="pt-button pt-minimal pt-icon-home">Home</Link>
+						<Link role="button" to='/reports' className="pt-button pt-minimal pt-icon-chart">Reports</Link>
 						<Link role="button" to='/transactions-list' className="pt-button pt-minimal pt-icon-list">Transactions</Link>
 						<Link role="button" to='/import' className="pt-button pt-minimal pt-icon-import">Import</Link>
 						<span className="pt-navbar-divider"></span>
@@ -57,6 +59,7 @@ class App extends React.Component<{}, State>{
 					<Route path='/manage-accounts' component={ManageAccounts} />
 					<Route path='/manage-categories' component={ManageCategories} />
 					<Route path='/manage-rules' component={ManageRules} />
+					<Route path='/reports' component={Reports} />
 					<Route path='/transactions-list' component={BankTransactionsList} />
 				</Switch>
 			</div>);
