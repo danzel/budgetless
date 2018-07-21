@@ -61,7 +61,7 @@ export class BankTransaction {
 	@Column()
 	userNote: string;
 
-	constructor(bankAccount: BankAccount, category: Category | undefined, date: dayjs.Dayjs, amount: number, description: string, balance: number | null) {
+	constructor(bankAccount: BankAccount, category: Category | null, date: dayjs.Dayjs, amount: number, description: string, balance: number | null) {
 		this.bankAccount = bankAccount;
 		this.category = category;
 		this.date = date;
