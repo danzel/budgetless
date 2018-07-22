@@ -9,7 +9,6 @@ html, body, #app, .full-height {
 	.ReactTable {
 		height: 100%;
 	}
-	
 	.amount {
 		text-align: right;
 
@@ -32,5 +31,12 @@ html, body, #app, .full-height {
 .manage-accounts {
 	td {
 		vertical-align: middle !important;
+	}
+}
+
+.reports {
+	.column {
+		display: inline-block;
+		vertical-align: top;
 	}
 }

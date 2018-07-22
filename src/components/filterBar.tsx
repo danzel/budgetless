@@ -99,6 +99,7 @@ export class FilterBar extends React.Component<FilterBarProps, State> {
 				</CategorySelect>
 
 			</NavbarGroup>
+			{this.props.children}
 		</Navbar>
 
 	}
