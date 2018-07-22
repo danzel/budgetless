@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { NonIdealState, Tag, Intent, Button, Toaster } from '@blueprintjs/core';
+import { NonIdealState, Tag, Intent, Button, Toaster, Tooltip, Icon, Callout } from '@blueprintjs/core';
 import { OfxParser, lazyInject, Services, Database, ImportHelper, ParseTransaction } from './services';
 import { BankAccount, BankTransaction } from './entities';
 
@@ -33,28 +33,41 @@ export class Import extends React.Component<{}, State> {
 	}
 
 	async onDropAsync(file: File) {
-		console.log((await this.database).bankAccounts);
-
 		this.setState({
 			dropzoneActive: false
 		});
 
-		try {
-			let text = await new Response(file).text();
-			let parsed = new OfxParser().parse(text);
-			let helper = new ImportHelper(this.database);
-			let result = await helper.dupeCheck(parsed);
+		if (file.name.toLowerCase().endsWith(".ofx")) {
+			//Import as OFX
+			try {
+				let text = await new Response(file).text();
+				let parsed = new OfxParser().parse(text);
+				let helper = new ImportHelper(this.database);
+				let result = await helper.dupeCheck(parsed);
 
-			this.setState({
-				bankAccount: (await (await this.database).bankAccounts.find({ where: { bankAccountNumber: parsed.bankAccountNumber } }))[0],
-				duplicates: result.duplicates,
-				transactions: result.newTransactions
-			});
-		} catch (err) {
+				this.setState({
+					bankAccount: (await (await this.database).bankAccounts.find({ where: { bankAccountNumber: parsed.bankAccountNumber } }))[0],
+					duplicates: result.duplicates,
+					transactions: result.newTransactions
+				});
+			} catch (err) {
+				this.toaster.show({
+					intent: Intent.DANGER,
+					message: (err as Error).message
+				})
+			}
+		} else if (file.name.toLowerCase().endsWith(".csv")) {
+			//Assume buxfer CSV
 			this.toaster.show({
 				intent: Intent.DANGER,
-				message: (err as Error).message
-			})
+				message: "Not sure how to import this file, did you mean to use the buxfer importer instead?"
+			});
+
+		} else {
+			this.toaster.show({
+				intent: Intent.DANGER,
+				message: "Not sure how to import this file, doesn't have a .ofx extension"
+			});
 		}
 	}
 
@@ -91,7 +104,15 @@ export class Import extends React.Component<{}, State> {
 	render() {
 		if (!this.state.bankAccount || !this.state.duplicates || !this.state.transactions) {
 			return <div style={{ position: 'relative', width: '100%', height: 'calc(100% - 50px)' }} className={this.state.dropzoneActive ? 'dropzone-active' : ''} onDrop={d => this.onDrop(d)} onDragOver={e => this.onDragEnter(e)} onDragLeave={() => this.onDragLeave()}>
-				<NonIdealState visual='import' title="Import a file" description="Drag a file on to import" />
+				<NonIdealState visual='import' title="Drag on a file to import">
+					<Callout style={{ textAlign: 'left' }} intent={Intent.PRIMARY}>
+						Supported Files types:
+							<ul>
+							<li>OFX</li>
+						</ul>
+						Buxfer transactions can be imported in the tools menu.
+					</Callout>
+				</NonIdealState>
 			</div>;
 		}
 
