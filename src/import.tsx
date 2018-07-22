@@ -91,7 +91,7 @@ export class Import extends React.Component<{}, State> {
 	render() {
 		if (!this.state.bankAccount || !this.state.duplicates || !this.state.transactions) {
 			return <div style={{ position: 'relative', width: '100%', height: 'calc(100% - 50px)' }} className={this.state.dropzoneActive ? 'dropzone-active' : ''} onDrop={d => this.onDrop(d)} onDragOver={e => this.onDragEnter(e)} onDragLeave={() => this.onDragLeave()}>
-				<NonIdealState visual='import' title="Import a file" description="Drag a file on or click to browse" />
+				<NonIdealState visual='import' title="Import a file" description="Drag a file on to import" />
 			</div>;
 		}
 
