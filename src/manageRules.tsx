@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { lazyInject, Services, Database } from './services';
+import { lazyInject, Services, Database, ImportHelper } from './services';
 import { Category, CategoryRule } from './entities';
 import { Button, Intent, InputGroup, Toaster, MenuItem } from '@blueprintjs/core';
 import { Select } from '@blueprintjs/select';
@@ -61,12 +61,14 @@ export class ManageRules extends React.Component<{}, State> {
 			return;
 		}
 
-		await (await this.database).rules.save({
-			category: this.state.createRuleCategory,
-			descriptionContains: this.state.createRuleMatch
-		});
+		let rule = await (await this.database).rules.save(new CategoryRule(this.state.createRuleCategory, this.state.createRuleMatch));
 
-		//TODO: Categorise any that match it
+		//Categorise any that match it
+		var changed = await new ImportHelper(this.database).applyRuleToDatabase(rule);
+		this.toaster.show({
+			intent: Intent.SUCCESS,
+			message: 'Updated ' + changed.length + ' transactions'
+		});
 
 		await this.load();
 

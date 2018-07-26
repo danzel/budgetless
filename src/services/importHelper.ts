@@ -93,7 +93,6 @@ export class ImportHelper {
 			.andWhere("tx.category IS NULL")
 			.getMany();
 
-		console.log(matching.length);
 		matching.forEach(m => m.category = rule.category);
 
 		await db.transactions.save(matching);
