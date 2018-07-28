@@ -6,8 +6,7 @@ import { lazyInject, Services, Database, ImportHelper } from './services';
 import ReactTable, { Column } from 'react-table';
 import * as dayjs from 'dayjs';
 import { In, IsNull, FindConditions, Between } from 'typeorm';
-import * as commaNumber from 'comma-number';
-import { DateRange, FilterBar, DateRanges } from './components/filterBar';
+import { DateRange, FilterBar, DateRanges, MoneyAmount } from './components';
 
 let CategorySelect = Select.ofType<Category>();
 
@@ -39,7 +38,7 @@ const ClickPropagationStopper = (props: any) => <span onClick={e => e.stopPropag
 
 export class BankTransactionsList extends React.Component<{}, State> {
 	@lazyInject(Services.Database)
-	database!: Promise<Database>;
+	private database!: Promise<Database>;
 
 	@lazyInject(Services.Toaster)
 	private toaster!: Toaster;
@@ -279,18 +278,7 @@ export class BankTransactionsList extends React.Component<{}, State> {
 				width: 100,
 				accessor: 'amount',
 				className: 'amount',
-				Cell: d => {
-					let amount = (d.value as number);
-					let className = amount >= 0 ? 'income' : 'expense';
-					let amountStr = commaNumber(Math.abs(amount).toFixed(2));
-					if (amount > 0) {
-						amountStr = '+ ' + amountStr;
-					} else {
-						amountStr = '- ' + amountStr;
-					}
-
-					return <span className={className}>{amountStr} </span>
-				}
+				Cell: d => <MoneyAmount amount={(d.value as number)} />
 			},
 			{
 				Header: 'Description',

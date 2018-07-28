@@ -12,6 +12,7 @@
     "@blueprintjs/core": "^2.3.1",
     "@blueprintjs/select": "^2.0.1",
     "comma-number": "^2.0.0",
+    "csv-parse": "^2.5.0",
     "dayjs": "^1.6.10",
     "inversify": "^4.13.0",
     "inversify-inject-decorators": "^3.1.0",
@@ -29,6 +30,7 @@
     "xml2js": "^0.4.19"
   },
   "devDependencies": {
+    "@types/csv-parse": "^1.1.11",
     "@types/react": "^16.4.6",
     "@types/react-dom": "^16.0.6",
     "@types/react-router-dom": "^4.2.7",

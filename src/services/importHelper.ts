@@ -1,6 +1,6 @@
 import { ParseResult, ParseTransaction } from './parseResult';
 import { Database } from './database';
-import { Between, Raw } from 'typeorm';
+import { Between } from 'typeorm';
 import { dateTransformer, BankTransaction, CategoryRule } from '../entities';
 
 export interface DupeCheckResult {
@@ -66,14 +66,16 @@ export class ImportHelper {
 		return result;
 	}
 
-	/** Applies the given rules to the given transactions and returns those transactions that received categories */
+	/** Applies the given rules to the given transactions and returns those transactions that received categories. 
+	 * Transactions that have existing categories will NOT have those categories changed.
+	*/
 	applyRules(transactions: BankTransaction[], rules: CategoryRule[]): BankTransaction[] {
 		let res = new Array<BankTransaction>();
 
 		transactions.forEach(t => {
 			for (let i = 0; i < rules.length; i++) {
 				let r = rules[i];
-				if (r.matches(t)) {
+				if (!t.category && r.matches(t)) {
 					t.category = r.category;
 					res.push(t);
 					break;

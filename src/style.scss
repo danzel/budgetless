@@ -9,15 +9,16 @@ html, body, #app, .full-height {
 	.ReactTable {
 		height: 100%;
 	}
-	.amount {
-		text-align: right;
+}
 
-		.income {
-			color: green;
-		}
-		.expense {
-			color: red;
-		}
+.amount {
+	text-align: right !important;
+
+	.income {
+		color: green;
+	}
+	.expense {
+		color: red;
 	}
 }
 
