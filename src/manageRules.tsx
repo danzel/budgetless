@@ -16,7 +16,7 @@ interface State {
 
 export class ManageRules extends React.Component<{}, State> {
 	@lazyInject(Services.Database)
-	database!: Promise<Database>;
+	database!: Database;
 
 	@lazyInject(Services.Toaster)
 	private toaster!: Toaster;
@@ -32,10 +32,10 @@ export class ManageRules extends React.Component<{}, State> {
 	}
 
 	async load() {
-		let categories = await (await this.database).categories.find();
+		let categories = await this.database.categories.find();
 		categories.sort((a, b) => a.name.localeCompare(b.name));
 
-		let rules = await (await this.database).rules.find();
+		let rules = await this.database.rules.find();
 		rules.sort((a, b) => a.descriptionContains.localeCompare(b.descriptionContains));
 
 		this.setState({
@@ -61,7 +61,7 @@ export class ManageRules extends React.Component<{}, State> {
 			return;
 		}
 
-		let rule = await (await this.database).rules.save(new CategoryRule(this.state.createRuleCategory, this.state.createRuleMatch));
+		let rule = await this.database.rules.save(new CategoryRule(this.state.createRuleCategory, this.state.createRuleMatch));
 
 		//Categorise any that match it
 		var changed = await new ImportHelper(this.database).applyRuleToDatabase(rule);
@@ -83,7 +83,7 @@ export class ManageRules extends React.Component<{}, State> {
 			return;
 		}
 
-		await (await this.database).rules.delete(r);
+		await this.database.rules.delete(r);
 
 		await this.load();
 	}

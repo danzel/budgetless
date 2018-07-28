@@ -1,6 +1,6 @@
 import { Database, createDatabase } from "../src/services/database";
 
-export async function withDatabase(testMethod: (database: Promise<Database>) => Promise<void>): Promise<void> {
+export async function withDatabase(testMethod: (database: Database) => Promise<void>): Promise<void> {
 	let database = createDatabase({
 		type: 'sqlite',
 		database: ':memory:',
@@ -12,6 +12,7 @@ export async function withDatabase(testMethod: (database: Promise<Database>) => 
 			"src/migrations/**/*.js"
 		],
 	});
+	await database.readyPromise;
 	try {
 		await testMethod(database);
 	} finally {

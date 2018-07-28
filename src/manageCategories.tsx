@@ -11,7 +11,7 @@ interface State {
 
 export class ManageCategories extends React.Component<{}, State> {
 	@lazyInject(Services.Database)
-	database!: Promise<Database>;
+	database!: Database;
 
 	@lazyInject(Services.Toaster)
 	private toaster!: Toaster;
@@ -27,7 +27,7 @@ export class ManageCategories extends React.Component<{}, State> {
 	}
 
 	async load() {
-		let categories = await (await this.database).categories.find();
+		let categories = await this.database.categories.find();
 		categories.sort((a, b) => a.name.localeCompare(b.name));
 		this.setState({ categories });
 	}
@@ -49,7 +49,7 @@ export class ManageCategories extends React.Component<{}, State> {
 			return;
 		}
 
-		await (await this.database).categories.insert({
+		await this.database.categories.insert({
 			name: this.state.createCategoryName
 		});
 
@@ -65,7 +65,7 @@ export class ManageCategories extends React.Component<{}, State> {
 			return;
 		}
 
-		await (await this.database).categories.delete(c);
+		await this.database.categories.delete(c);
 
 		await this.load();
 	}

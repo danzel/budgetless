@@ -1,7 +1,7 @@
 import { app, BrowserWindow } from 'electron'
 import {enableLiveReload} from 'electron-compile';
 
-enableLiveReload({strategy: 'react-hmr'});
+enableLiveReload();
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 

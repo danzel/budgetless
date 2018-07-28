@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { hot } from 'react-hot-loader';
 import { Route, Switch, Link } from 'react-router-dom';
 
 import { BuxferImport } from './buxferImport';
@@ -15,7 +14,7 @@ import { Reports } from './reports';
 interface State {
 }
 
-class App extends React.Component<{}, State>{
+export class App extends React.Component<{}, State>{
 
 	@lazyInject(Services.History)
 	history!: History;
@@ -70,5 +69,3 @@ class App extends React.Component<{}, State>{
 			</div>);
 	}
 }
-
-export default hot(module)(App)

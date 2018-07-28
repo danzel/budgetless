@@ -57,7 +57,7 @@ interface State {
 
 export class Reports extends React.Component<{}, State> {
 	@lazyInject(Services.Database)
-	database!: Promise<Database>;
+	database!: Database;
 
 	constructor(props: any) {
 		super(props);
@@ -75,10 +75,8 @@ export class Reports extends React.Component<{}, State> {
 	}
 
 	private async load() {
-		let db = await this.database;
-
-		let categories = await db.categories.find({ order: { name: 'ASC' } })
-		let accounts = await db.bankAccounts.find({ order: { name: 'ASC' } });
+		let categories = await this.database.categories.find({ order: { name: 'ASC' } })
+		let accounts = await this.database.bankAccounts.find({ order: { name: 'ASC' } });
 
 		this.setState({
 			accounts,
@@ -123,8 +121,6 @@ export class Reports extends React.Component<{}, State> {
 			return;
 		}
 
-		let db = await this.database;
-
 		//Gotta do this group by manually as "IN" using typeorm QueryBuilder makes bad SQL
 
 		let query = "SELECT name, SUM(amount) AS totalAmount " +
@@ -159,7 +155,7 @@ export class Reports extends React.Component<{}, State> {
 		}
 
 		query += " GROUP BY name";
-		let res: BankTransactionGroup[] = await db.connection.query(query, parameters);
+		let res: BankTransactionGroup[] = await this.database.connection.query(query, parameters);
 		console.log(res.length);
 		console.log(res);
 

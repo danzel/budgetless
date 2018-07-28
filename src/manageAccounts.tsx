@@ -12,7 +12,7 @@ interface State {
 
 export class ManageAccounts extends React.Component<{}, State> {
 	@lazyInject(Services.Database)
-	database!: Promise<Database>;
+	database!: Database;
 
 	@lazyInject(Services.Toaster)
 	private toaster!: Toaster;
@@ -29,7 +29,7 @@ export class ManageAccounts extends React.Component<{}, State> {
 	}
 
 	async load() {
-		let accounts = await (await this.database).bankAccounts.find();
+		let accounts = await this.database.bankAccounts.find();
 		accounts.sort((a, b) => a.bankAccountNumber.localeCompare(b.bankAccountNumber));
 		this.setState({ accounts });
 	}
@@ -65,7 +65,7 @@ export class ManageAccounts extends React.Component<{}, State> {
 			return;
 		}
 
-		await (await this.database).bankAccounts.insert({
+		await this.database.bankAccounts.insert({
 			bankAccountNumber: this.state.createAccountNumber,
 			name: this.state.createAccountName
 		});
@@ -83,7 +83,7 @@ export class ManageAccounts extends React.Component<{}, State> {
 			return;
 		}
 
-		await (await this.database).bankAccounts.delete(a);
+		await this.database.bankAccounts.delete(a);
 
 		await this.load();
 	}

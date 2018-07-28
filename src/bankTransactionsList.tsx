@@ -38,7 +38,7 @@ const ClickPropagationStopper = (props: any) => <span onClick={e => e.stopPropag
 
 export class BankTransactionsList extends React.Component<{}, State> {
 	@lazyInject(Services.Database)
-	private database!: Promise<Database>;
+	private database!: Database;
 
 	@lazyInject(Services.Toaster)
 	private toaster!: Toaster;
@@ -75,10 +75,8 @@ export class BankTransactionsList extends React.Component<{}, State> {
 	}
 
 	private async load() {
-		let db = await this.database;
-
-		let categories = await db.categories.find({ order: { name: 'ASC' } })
-		let accounts = await db.bankAccounts.find({ order: { name: 'ASC' } });
+		let categories = await this.database.categories.find({ order: { name: 'ASC' } })
+		let accounts = await this.database.bankAccounts.find({ order: { name: 'ASC' } });
 
 		this.setState({
 			accounts,
@@ -146,8 +144,6 @@ export class BankTransactionsList extends React.Component<{}, State> {
 			return;
 		}
 
-		let db = await this.database;
-
 		//Need to create the category
 		if (rule.category.categoryId == AddCategory.categoryId) {
 			rule.category = await this.addCategory(rule.category.name);
@@ -155,9 +151,9 @@ export class BankTransactionsList extends React.Component<{}, State> {
 		
 		//Remove the existing category from the selected transaction so it gets applied
 		this.state.createRuleTransaction!.category = null;
-		await db.transactions.save(this.state.createRuleTransaction!)
+		await this.database.transactions.save(this.state.createRuleTransaction!)
 
-		await db.rules.save(rule);
+		await this.database.rules.save(rule);
 
 		this.setState({
 			createRuleCategory: undefined,
@@ -194,8 +190,7 @@ export class BankTransactionsList extends React.Component<{}, State> {
 			recreated.category = null;
 		}
 
-		let db = await this.database;
-		await db.transactions.save(recreated);
+		await this.database.transactions.save(recreated);
 
 		//Replace the item with the new one
 		this.setState({
@@ -205,7 +200,7 @@ export class BankTransactionsList extends React.Component<{}, State> {
 
 	private async addCategory(categoryName: string): Promise<Category> {
 		let category = new Category(categoryName);
-		await (await this.database).categories.save(category);
+		await this.database.categories.save(category);
 
 		let categories = [category].concat(this.state.allCategories!).sort((a, b) => a.name.localeCompare(b.name));
 
@@ -223,8 +218,6 @@ export class BankTransactionsList extends React.Component<{}, State> {
 	}
 
 	private async loadTransactions() {
-		let db = await this.database;
-
 		let where: FindConditions<BankTransaction> = {
 			bankAccount: In(this.state.selectedAccounts!.map(a => a.bankAccountId))
 		};
@@ -243,7 +236,7 @@ export class BankTransactionsList extends React.Component<{}, State> {
 			where.category = this.state.selectedCategory;
 		}
 
-		let transactions = await db.transactions.find({
+		let transactions = await this.database.transactions.find({
 			where,
 			relations: [
 				'bankAccount',

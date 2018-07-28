@@ -14,7 +14,7 @@ interface State {
 export class Import extends React.Component<{}, State> {
 
 	@lazyInject(Services.Database)
-	private database!: Promise<Database>;
+	private database!: Database;
 
 	@lazyInject(Services.Toaster)
 	private toaster!: Toaster;
@@ -46,7 +46,7 @@ export class Import extends React.Component<{}, State> {
 				let result = await helper.dupeCheck(parsed);
 
 				this.setState({
-					bankAccount: (await (await this.database).bankAccounts.find({ where: { bankAccountNumber: parsed.bankAccountNumber } }))[0],
+					bankAccount: (await this.database.bankAccounts.find({ where: { bankAccountNumber: parsed.bankAccountNumber } }))[0],
 					duplicates: result.duplicates,
 					transactions: result.newTransactions
 				});
@@ -72,9 +72,7 @@ export class Import extends React.Component<{}, State> {
 	}
 
 	async import() {
-		let db = (await this.database);
-
-		db.transactions.save(this.state.transactions!);
+		await this.database.transactions.save(this.state.transactions!);
 
 		this.toaster.show({
 			intent: Intent.SUCCESS,

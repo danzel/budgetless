@@ -5,18 +5,52 @@ import { SqliteConnectionOptions } from "typeorm/driver/sqlite/SqliteConnectionO
 
 let ormConfig: SqliteConnectionOptions = require('../../ormconfig.json')
 
+/**
+ * Holds database and repositories.
+ * Connection and repositories are not valid until readyPromise has resolved.
+ */
 @injectable()
 export class Database {
-	constructor(
-		public connection: Connection,
-		public bankAccounts: Repository<BankAccount>,
-		public categories: Repository<Category>,
-		public transactions: Repository<BankTransaction>,
-		public rules: Repository<CategoryRule>
-	) { }
+
+	isReady = false;
+	readyPromise: Promise<void>;
+
+	public connection!: Connection;
+	public bankAccounts!: Repository<BankAccount>;
+	public categories!: Repository<Category>;
+	public transactions!: Repository<BankTransaction>;
+	public rules!: Repository<CategoryRule>;
+
+	constructor(config: SqliteConnectionOptions) {
+		this.readyPromise = this.load(config);
+	}
+
+	private async load(config: SqliteConnectionOptions) {
+		const name = config.name || 'default';
+
+		//Makes hot-reload work
+		try {
+			let connection = getConnection(name);
+			if (connection.isConnected) {
+				await connection.close();
+			}
+		} catch (err) {
+			//Do nothing
+		}
+
+		this.connection = await createConnection(config);
+
+		await this.connection.runMigrations();
+		this.bankAccounts = this.connection.getRepository(BankAccount);
+		this.categories = this.connection.getRepository(Category);
+		this.transactions = this.connection.getRepository(BankTransaction);
+		this.rules = this.connection.getRepository(CategoryRule);
+
+		this.isReady = true;
+	}
 }
 
-export async function createDatabase(config?: SqliteConnectionOptions) {
+export function createDatabase(config?: SqliteConnectionOptions) {
 	console.log("Creating the database");
 
 	if (config) {
@@ -25,25 +59,5 @@ export async function createDatabase(config?: SqliteConnectionOptions) {
 		config = ormConfig;
 	}
 
-	let name = config.name || 'default';
-
-	//Makes hot-reload work
-	try {
-		let connection = getConnection(name);
-		if (connection.isConnected) {
-			await connection.close();
-		}
-	} catch (err) {
-		//Do nothing
-	}
-
-	let connection = await createConnection(config);
-
-	await connection.runMigrations();
-	let bankAccounts = connection.getRepository(BankAccount);
-	let categories = connection.getRepository(Category);
-	let transactions = connection.getRepository(BankTransaction);
-	let rules = connection.getRepository(CategoryRule);
-
-	return new Database(connection, bankAccounts, categories, transactions, rules);
+	return new Database(config);
 }

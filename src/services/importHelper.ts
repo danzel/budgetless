@@ -10,7 +10,7 @@ export interface DupeCheckResult {
 
 /** Helps manipulate data for inserting in to the database */
 export class ImportHelper {
-	constructor(private databasePromise: Promise<Database>) {
+	constructor(private database: Database) {
 	}
 
 	/** Separates out the provided transactions in to duplicates and not duplicates. not duplicates are categories by the existing rules */
@@ -18,8 +18,6 @@ export class ImportHelper {
 		if (values.transactions.length == 0) {
 			return { duplicates: [], newTransactions: [] };
 		}
-
-		let db = (await this.databasePromise);
 
 		let minDate = values.transactions[0].date;
 		let maxDate = values.transactions[0].date;
@@ -33,7 +31,7 @@ export class ImportHelper {
 			}
 		});
 
-		let account = await db.bankAccounts.findOne({
+		let account = await this.database.bankAccounts.findOne({
 			bankAccountNumber: values.bankAccountNumber
 		});
 
@@ -41,7 +39,7 @@ export class ImportHelper {
 			throw new Error("Bank account not found: " + values.bankAccountNumber)
 		}
 
-		let existing = await db.transactions.find({
+		let existing = await this.database.transactions.find({
 			date: Between(dateTransformer.to(minDate), dateTransformer.to(maxDate)),
 			bankAccount: account
 		});
@@ -60,7 +58,7 @@ export class ImportHelper {
 		})
 
 		//Apply the rules
-		let rules = await db.rules.find();
+		let rules = await this.database.rules.find();
 		this.applyRules(result.newTransactions, rules);
 
 		return result;
@@ -88,16 +86,14 @@ export class ImportHelper {
 
 	/** Applies the given rule to all matching transactions in the database, returning the transactions that match */
 	async applyRuleToDatabase(rule: CategoryRule): Promise<BankTransaction[]> {
-		let db = await this.databasePromise;
-
-		let matching = await db.transactions.createQueryBuilder("tx")
+		let matching = await this.database.transactions.createQueryBuilder("tx")
 			.where("lower(tx.description) LIKE lower(:rule)", { rule: '%' + rule.descriptionContains + '%' })
 			.andWhere("tx.category IS NULL")
 			.getMany();
 
 		matching.forEach(m => m.category = rule.category);
 
-		await db.transactions.save(matching);
+		await this.database.transactions.save(matching);
 
 		return matching;
 	}

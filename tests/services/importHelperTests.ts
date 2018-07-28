@@ -7,9 +7,8 @@ import { BankTransaction, BankAccount, Category } from '../../src/entities';
 
 test('ImportHelper finds no dupe for first transaction', async t => withDatabase(async database => {
 	let importHelper = new ImportHelper(database);
-	let db = (await database);
 
-	await db.bankAccounts.save({
+	await database.bankAccounts.save({
 		bankAccountNumber: '1',
 		name: 'Account 1'
 	});
@@ -30,9 +29,8 @@ test('ImportHelper finds no dupe for first transaction', async t => withDatabase
 	t.is(result.duplicates.length, 0);
 }));
 
-test('ImportHelper finds dupe', async t => withDatabase(async database => {
-	let importHelper = new ImportHelper(database);
-	let db = (await database);
+test('ImportHelper finds dupe', async t => withDatabase(async db => {
+	let importHelper = new ImportHelper(db);
 
 	let account = await db.bankAccounts.save({
 		bankAccountNumber: '1',
@@ -64,9 +62,8 @@ test('ImportHelper finds dupe', async t => withDatabase(async database => {
 	t.is(result.duplicates.length, 1);
 }));
 
-test('ImportHelper applies rules', async t => withDatabase(async database => {
-	let importHelper = new ImportHelper(database);
-	let db = (await database);
+test('ImportHelper applies rules', async t => withDatabase(async db => {
+	let importHelper = new ImportHelper(db);
 
 	await db.bankAccounts.save({
 		bankAccountNumber: '1',

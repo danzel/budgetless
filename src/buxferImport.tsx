@@ -39,7 +39,7 @@ interface State {
 
 export class BuxferImport extends React.Component<{}, State> {
 	@lazyInject(Services.Database)
-	private database!: Promise<Database>;
+	private database!: Database;
 
 	@lazyInject(Services.Toaster)
 	private toaster!: Toaster;
@@ -53,11 +53,9 @@ export class BuxferImport extends React.Component<{}, State> {
 	}
 
 	private async loadFromDb() {
-		let db = await this.database;
-
-		let accounts = await db.bankAccounts.find();
-		let categories = await db.categories.find();
-		let rules = await db.rules.find();
+		let accounts = await this.database.bankAccounts.find();
+		let categories = await this.database.categories.find();
+		let rules = await this.database.rules.find();
 
 		this.setState({
 			accounts: accounts,
@@ -221,9 +219,7 @@ export class BuxferImport extends React.Component<{}, State> {
 	private async import() {
 		let tx = this.createBankTransactions();
 
-		let db = await this.database;
-
-		await db.transactions.save(tx);
+		await this.database.transactions.save(tx);
 
 		this.toaster.show({
 			intent: Intent.SUCCESS,
