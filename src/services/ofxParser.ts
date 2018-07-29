@@ -2,10 +2,11 @@ import { ParseResult, ParseTransaction } from "./parseResult";
 import * as xml2js from 'xml2js';
 import * as dayjs from "dayjs";
 import { injectable } from "inversify";
+import { ImportFile } from "../entities/importFile";
 
 @injectable()
 export class OfxParser {
-	parse(fileContents: string): ParseResult {
+	parse(fileName: string, fileContents: string): ParseResult {
 
 		let lines = fileContents.replace(/\r/g, '').split('\n');
 		//Skip the header, we don't do anything with it yet
@@ -73,7 +74,8 @@ export class OfxParser {
 
 		return {
 			bankAccountNumber,
-			transactions
+			importFile: new ImportFile(fileName, fileContents, dayjs()),
+			transactions,
 		};
 	}
 

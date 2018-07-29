@@ -3,7 +3,7 @@ import test from 'ava';
 import { ImportHelper } from "../../src/services/importHelper";
 import { withDatabase } from '../helper';
 import * as dayjs from 'dayjs';
-import { BankTransaction, BankAccount, Category } from '../../src/entities';
+import { BankTransaction, BankAccount, Category, ImportFile } from '../../src/entities';
 
 test('ImportHelper finds no dupe for first transaction', async t => withDatabase(async database => {
 	let importHelper = new ImportHelper(database);
@@ -15,6 +15,7 @@ test('ImportHelper finds no dupe for first transaction', async t => withDatabase
 
 	let result = await importHelper.dupeCheck({
 		bankAccountNumber: '1',
+		importFile: new ImportFile('', '', dayjs()),
 		transactions: [
 			{
 				amount: 100,
@@ -48,6 +49,7 @@ test('ImportHelper finds dupe', async t => withDatabase(async db => {
 
 	let result = await importHelper.dupeCheck({
 		bankAccountNumber: '1',
+		importFile: new ImportFile('', '', dayjs()),
 		transactions: [
 			{
 				amount: 100,
@@ -80,6 +82,7 @@ test('ImportHelper applies rules', async t => withDatabase(async db => {
 
 	let result = await importHelper.dupeCheck({
 		bankAccountNumber: '1',
+		importFile: new ImportFile('', '', dayjs()),
 		transactions: [
 			{
 				amount: 100,

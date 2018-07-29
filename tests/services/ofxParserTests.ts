@@ -9,7 +9,7 @@ test('OfxParser can parse an OFX file', t => {
 
 	let contents = fs.readFileSync('tests/resources/ofxfile1.ofx', { encoding: 'utf8' });
 
-	let result = parser.parse(contents);
+	let result = parser.parse('', contents);
 
 	t.truthy(result);
 

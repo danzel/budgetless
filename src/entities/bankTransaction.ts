@@ -2,6 +2,7 @@ import * as dayjs from 'dayjs';
 import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, FindOperator } from 'typeorm';
 import { BankAccount } from './bankAccount';
 import { Category } from './category';
+import { ImportFile } from './importFile';
 
 const moneyTransformer = {
 	to(value: number | null) { return value == null ? null : (value * 100); },
@@ -30,10 +31,11 @@ export class BankTransaction {
 	@ManyToOne(type => Category, cat => cat.transactions, { onDelete: 'SET NULL' })
 	category: Category | null;
 
+	@ManyToOne(type => ImportFile, ifile => ifile.transactions, { onDelete: 'CASCADE' })
+	importFile: ImportFile;
+
 	//The date this transaction occurred
-	@Column('text', {
-		transformer: dateTransformer
-	})
+	@Column('text', { transformer: dateTransformer })
 	date: dayjs.Dayjs;
 
 	//Amount of the transaction, negative for debit (money spent), positive for credit (money earnt)
@@ -61,9 +63,10 @@ export class BankTransaction {
 	@Column()
 	userNote: string;
 
-	constructor(bankAccount: BankAccount, category: Category | null, date: dayjs.Dayjs, amount: number, description: string, balance: number | null) {
+	constructor(bankAccount: BankAccount, category: Category | null, importFile: ImportFile, date: dayjs.Dayjs, amount: number, description: string, balance: number | null) {
 		this.bankAccount = bankAccount;
 		this.category = category;
+		this.importFile = importFile;
 		this.date = date;
 		this.amount = amount;
 		this.description = description;

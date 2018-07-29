@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Callout, Intent, FileInput, MenuItem, Button, Toaster } from '@blueprintjs/core';
 import * as parse from 'csv-parse';
 import * as dayjs from 'dayjs';
-import { BankAccount, Category, UncategorisedCategory, CategoryRule, BankTransaction } from './entities';
+import { BankAccount, Category, UncategorisedCategory, CategoryRule, BankTransaction, ImportFile } from './entities';
 import { lazyInject, Services, Database, ImportHelper } from './services';
 import { MoneyAmount } from './components';
 
@@ -28,6 +28,8 @@ interface State {
 	stats?: Map<number, { amount: number, count: number }>;
 
 	buxfer?: {
+		importFile: ImportFile;
+		
 		accountsMap: Map<string, BankAccount>;
 
 		tagsMap: Map<string, Category>;
@@ -68,6 +70,8 @@ export class BuxferImport extends React.Component<{}, State> {
 		if (!e.currentTarget.files) {
 			return;
 		}
+
+		const fileName = e.currentTarget.files[0].name;
 
 		let reader = new FileReader();
 		reader.addEventListener('load', () => {
@@ -129,6 +133,7 @@ export class BuxferImport extends React.Component<{}, State> {
 
 				this.setState({
 					buxfer: {
+						importFile: new ImportFile(fileName, data, dayjs()),
 						accountsMap: accountsMap,
 						tagsMap: tagsMap,
 
@@ -177,7 +182,7 @@ export class BuxferImport extends React.Component<{}, State> {
 				cat = undefined;
 			}
 
-			let t = new BankTransaction(acc!, cat!, dayjs(r.Date), parseFloat(r.Amount), r.Description, null);
+			let t = new BankTransaction(acc!, cat!, buxfer.importFile, dayjs(r.Date), parseFloat(r.Amount), r.Description, null);
 			t.userNote = "From buxfer";
 			if (r.Tags) {
 				t.userNote += ". Tags: " + r.Tags;
@@ -219,7 +224,7 @@ export class BuxferImport extends React.Component<{}, State> {
 	private async import() {
 		let tx = this.createBankTransactions();
 
-		await this.database.transactions.save(tx);
+		await this.database.entityManager.save([this.state.buxfer!.importFile, this.state.buxfer!.importFile.importFileContents, ...tx]);
 
 		this.toaster.show({
 			intent: Intent.SUCCESS,

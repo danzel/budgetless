@@ -1,4 +1,5 @@
 import * as dayjs from 'dayjs';
+import { ImportFile } from '../entities/importFile';
 
 export interface ParseTransaction {
 
@@ -17,5 +18,6 @@ export interface ParseTransaction {
 
 export interface ParseResult {
 	bankAccountNumber: string;
+	importFile: ImportFile;
 	transactions: ParseTransaction[];
 }

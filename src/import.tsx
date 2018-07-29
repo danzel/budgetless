@@ -2,12 +2,15 @@ import * as React from 'react';
 import { NonIdealState, Tag, Intent, Button, Toaster, Tooltip, Icon, Callout } from '@blueprintjs/core';
 import { OfxParser, lazyInject, Services, Database, ImportHelper, ParseTransaction } from './services';
 import { BankAccount, BankTransaction } from './entities';
+import { ImportFile } from './entities/importFile';
 
 interface State {
 	dropzoneActive: boolean;
 
 	bankAccount?: BankAccount;
 	duplicates?: ParseTransaction[];
+
+	importFile?: ImportFile;
 	transactions?: BankTransaction[];
 }
 
@@ -41,13 +44,14 @@ export class Import extends React.Component<{}, State> {
 			//Import as OFX
 			try {
 				let text = await new Response(file).text();
-				let parsed = new OfxParser().parse(text);
+				let parsed = new OfxParser().parse(file.name, text);
 				let helper = new ImportHelper(this.database);
 				let result = await helper.dupeCheck(parsed);
 
 				this.setState({
 					bankAccount: (await this.database.bankAccounts.find({ where: { bankAccountNumber: parsed.bankAccountNumber } }))[0],
 					duplicates: result.duplicates,
+					importFile: parsed.importFile,
 					transactions: result.newTransactions
 				});
 			} catch (err) {
@@ -72,7 +76,7 @@ export class Import extends React.Component<{}, State> {
 	}
 
 	async import() {
-		await this.database.transactions.save(this.state.transactions!);
+		await this.database.entityManager.save([this.state.importFile, this.state.importFile!.importFileContents, ...this.state.transactions!]);
 
 		this.toaster.show({
 			intent: Intent.SUCCESS,

@@ -181,7 +181,7 @@ export class BankTransactionsList extends React.Component<{}, State> {
 
 	private async setTransactionCategory(t: BankTransaction, category: Category) {
 		//recreate it so we can replace it in the react state
-		let recreated = new BankTransaction(t.bankAccount, category, t.date, t.amount, t.description, t.balance);
+		let recreated = new BankTransaction(t.bankAccount, category, t.importFile, t.date, t.amount, t.description, t.balance);
 		recreated.bankTransactionId = t.bankTransactionId;
 		recreated.calculatedBalance = t.calculatedBalance;
 		recreated.userNote = t.userNote;
@@ -240,7 +240,8 @@ export class BankTransactionsList extends React.Component<{}, State> {
 			where,
 			relations: [
 				'bankAccount',
-				'category'
+				'category',
+				'importFile'
 			],
 			order: {
 				date: 'DESC'

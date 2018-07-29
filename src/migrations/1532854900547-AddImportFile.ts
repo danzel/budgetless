@@ -1,0 +1,39 @@
+import {MigrationInterface, QueryRunner} from "typeorm";
+
+export class AddImportFile1532854900547 implements MigrationInterface {
+
+    public async up(queryRunner: QueryRunner): Promise<any> {
+        await queryRunner.query(`CREATE TABLE "import_file_contents" ("importFileContentsId" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "fileData" varchar NOT NULL, "importFileImportFileId" integer, CONSTRAINT "REL_427cf63ba6096aaa40d2a92d4f" UNIQUE ("importFileImportFileId"))`);
+        await queryRunner.query(`CREATE TABLE "import_file" ("importFileId" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "fileName" varchar NOT NULL, "dateImported" text NOT NULL)`);
+        await queryRunner.query(`CREATE TABLE "temporary_bank_transaction" ("bankTransactionId" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "date" text NOT NULL, "amount" integer NOT NULL, "description" varchar NOT NULL, "balance" integer, "calculatedBalance" integer, "userNote" varchar NOT NULL, "bankAccountBankAccountId" integer, "categoryCategoryId" integer, "importFileImportFileId" integer, CONSTRAINT "FK_3383fd03b1fba77bf5aeb9383f4" FOREIGN KEY ("bankAccountBankAccountId") REFERENCES "bank_account" ("bankAccountId") ON DELETE CASCADE ON UPDATE NO ACTION, CONSTRAINT "FK_db55b94d4cb02fe2e2f25508ece" FOREIGN KEY ("categoryCategoryId") REFERENCES "category" ("categoryId") ON DELETE SET NULL ON UPDATE NO ACTION)`);
+        await queryRunner.query(`INSERT INTO "temporary_bank_transaction"("bankTransactionId", "date", "amount", "description", "balance", "calculatedBalance", "userNote", "bankAccountBankAccountId", "categoryCategoryId") SELECT "bankTransactionId", "date", "amount", "description", "balance", "calculatedBalance", "userNote", "bankAccountBankAccountId", "categoryCategoryId" FROM "bank_transaction"`);
+        await queryRunner.query(`DROP TABLE "bank_transaction"`);
+        await queryRunner.query(`ALTER TABLE "temporary_bank_transaction" RENAME TO "bank_transaction"`);
+        await queryRunner.query(`CREATE TABLE "temporary_import_file_contents" ("importFileContentsId" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "fileData" varchar NOT NULL, "importFileImportFileId" integer, CONSTRAINT "REL_427cf63ba6096aaa40d2a92d4f" UNIQUE ("importFileImportFileId"), CONSTRAINT "FK_427cf63ba6096aaa40d2a92d4fc" FOREIGN KEY ("importFileImportFileId") REFERENCES "import_file" ("importFileId") ON DELETE CASCADE)`);
+        await queryRunner.query(`INSERT INTO "temporary_import_file_contents"("importFileContentsId", "fileData", "importFileImportFileId") SELECT "importFileContentsId", "fileData", "importFileImportFileId" FROM "import_file_contents"`);
+        await queryRunner.query(`DROP TABLE "import_file_contents"`);
+        await queryRunner.query(`ALTER TABLE "temporary_import_file_contents" RENAME TO "import_file_contents"`);
+        await queryRunner.query(`CREATE TABLE "temporary_bank_transaction" ("bankTransactionId" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "date" text NOT NULL, "amount" integer NOT NULL, "description" varchar NOT NULL, "balance" integer, "calculatedBalance" integer, "userNote" varchar NOT NULL, "bankAccountBankAccountId" integer, "categoryCategoryId" integer, "importFileImportFileId" integer, CONSTRAINT "FK_3383fd03b1fba77bf5aeb9383f4" FOREIGN KEY ("bankAccountBankAccountId") REFERENCES "bank_account" ("bankAccountId") ON DELETE CASCADE ON UPDATE NO ACTION, CONSTRAINT "FK_db55b94d4cb02fe2e2f25508ece" FOREIGN KEY ("categoryCategoryId") REFERENCES "category" ("categoryId") ON DELETE SET NULL ON UPDATE NO ACTION, CONSTRAINT "FK_abfdf9d307d0392f9e5ce49816b" FOREIGN KEY ("importFileImportFileId") REFERENCES "import_file" ("importFileId") ON DELETE CASCADE)`);
+        await queryRunner.query(`INSERT INTO "temporary_bank_transaction"("bankTransactionId", "date", "amount", "description", "balance", "calculatedBalance", "userNote", "bankAccountBankAccountId", "categoryCategoryId", "importFileImportFileId") SELECT "bankTransactionId", "date", "amount", "description", "balance", "calculatedBalance", "userNote", "bankAccountBankAccountId", "categoryCategoryId", "importFileImportFileId" FROM "bank_transaction"`);
+        await queryRunner.query(`DROP TABLE "bank_transaction"`);
+        await queryRunner.query(`ALTER TABLE "temporary_bank_transaction" RENAME TO "bank_transaction"`);
+    }
+
+    public async down(queryRunner: QueryRunner): Promise<any> {
+        await queryRunner.query(`ALTER TABLE "bank_transaction" RENAME TO "temporary_bank_transaction"`);
+        await queryRunner.query(`CREATE TABLE "bank_transaction" ("bankTransactionId" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "date" text NOT NULL, "amount" integer NOT NULL, "description" varchar NOT NULL, "balance" integer, "calculatedBalance" integer, "userNote" varchar NOT NULL, "bankAccountBankAccountId" integer, "categoryCategoryId" integer, "importFileImportFileId" integer, CONSTRAINT "FK_3383fd03b1fba77bf5aeb9383f4" FOREIGN KEY ("bankAccountBankAccountId") REFERENCES "bank_account" ("bankAccountId") ON DELETE CASCADE ON UPDATE NO ACTION, CONSTRAINT "FK_db55b94d4cb02fe2e2f25508ece" FOREIGN KEY ("categoryCategoryId") REFERENCES "category" ("categoryId") ON DELETE SET NULL ON UPDATE NO ACTION)`);
+        await queryRunner.query(`INSERT INTO "bank_transaction"("bankTransactionId", "date", "amount", "description", "balance", "calculatedBalance", "userNote", "bankAccountBankAccountId", "categoryCategoryId", "importFileImportFileId") SELECT "bankTransactionId", "date", "amount", "description", "balance", "calculatedBalance", "userNote", "bankAccountBankAccountId", "categoryCategoryId", "importFileImportFileId" FROM "temporary_bank_transaction"`);
+        await queryRunner.query(`DROP TABLE "temporary_bank_transaction"`);
+        await queryRunner.query(`ALTER TABLE "import_file_contents" RENAME TO "temporary_import_file_contents"`);
+        await queryRunner.query(`CREATE TABLE "import_file_contents" ("importFileContentsId" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "fileData" varchar NOT NULL, "importFileImportFileId" integer, CONSTRAINT "REL_427cf63ba6096aaa40d2a92d4f" UNIQUE ("importFileImportFileId"))`);
+        await queryRunner.query(`INSERT INTO "import_file_contents"("importFileContentsId", "fileData", "importFileImportFileId") SELECT "importFileContentsId", "fileData", "importFileImportFileId" FROM "temporary_import_file_contents"`);
+        await queryRunner.query(`DROP TABLE "temporary_import_file_contents"`);
+        await queryRunner.query(`ALTER TABLE "bank_transaction" RENAME TO "temporary_bank_transaction"`);
+        await queryRunner.query(`CREATE TABLE "bank_transaction" ("bankTransactionId" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "date" text NOT NULL, "amount" integer NOT NULL, "description" varchar NOT NULL, "balance" integer, "calculatedBalance" integer, "userNote" varchar NOT NULL, "bankAccountBankAccountId" integer, "categoryCategoryId" integer, CONSTRAINT "FK_3383fd03b1fba77bf5aeb9383f4" FOREIGN KEY ("bankAccountBankAccountId") REFERENCES "bank_account" ("bankAccountId") ON DELETE CASCADE ON UPDATE NO ACTION, CONSTRAINT "FK_db55b94d4cb02fe2e2f25508ece" FOREIGN KEY ("categoryCategoryId") REFERENCES "category" ("categoryId") ON DELETE SET NULL ON UPDATE NO ACTION)`);
+        await queryRunner.query(`INSERT INTO "bank_transaction"("bankTransactionId", "date", "amount", "description", "balance", "calculatedBalance", "userNote", "bankAccountBankAccountId", "categoryCategoryId") SELECT "bankTransactionId", "date", "amount", "description", "balance", "calculatedBalance", "userNote", "bankAccountBankAccountId", "categoryCategoryId" FROM "temporary_bank_transaction"`);
+        await queryRunner.query(`DROP TABLE "temporary_bank_transaction"`);
+        await queryRunner.query(`DROP TABLE "import_file"`);
+        await queryRunner.query(`DROP TABLE "import_file_contents"`);
+    }
+
+}

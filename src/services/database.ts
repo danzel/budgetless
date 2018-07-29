@@ -1,5 +1,5 @@
 import { injectable } from "inversify";
-import { createConnection, getConnection, Connection, Repository } from "typeorm";
+import { createConnection, getConnection, Connection, Repository, EntityManager } from "typeorm";
 import { BankAccount, BankTransaction, Category, CategoryRule } from "../entities";
 import { SqliteConnectionOptions } from "typeorm/driver/sqlite/SqliteConnectionOptions";
 
@@ -20,6 +20,7 @@ export class Database {
 	public categories!: Repository<Category>;
 	public transactions!: Repository<BankTransaction>;
 	public rules!: Repository<CategoryRule>;
+	public entityManager!: EntityManager;
 
 	constructor(config: SqliteConnectionOptions) {
 		this.readyPromise = this.load(config);
@@ -45,6 +46,7 @@ export class Database {
 		this.categories = this.connection.getRepository(Category);
 		this.transactions = this.connection.getRepository(BankTransaction);
 		this.rules = this.connection.getRepository(CategoryRule);
+		this.entityManager = this.connection.createEntityManager();
 
 		this.isReady = true;
 	}
