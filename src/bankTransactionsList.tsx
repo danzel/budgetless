@@ -222,8 +222,8 @@ export class BankTransactionsList extends React.Component<{}, State> {
 			bankAccount: In(this.state.selectedAccounts!.map(a => a.bankAccountId))
 		};
 
-		let start = this.state.selectedDateRange.start();
-		let end = this.state.selectedDateRange.end();
+		let start = this.state.selectedDateRange.getStart();
+		let end = this.state.selectedDateRange.getEnd();
 		if (start && end) {
 			where.date = Between(dateTransformer.to(start), dateTransformer.to(end));
 		}

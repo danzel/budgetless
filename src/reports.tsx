@@ -65,7 +65,7 @@ export class Reports extends React.Component<{}, State> {
 		this.state = {
 			selectedAccounts: [],
 			selectedCategory: EveryCategory,
-			selectedDateRange: DateRanges[1], //todo 0
+			selectedDateRange: DateRanges[0],
 
 			mode: ReportsMode.Expense,
 			results: []
@@ -136,8 +136,8 @@ export class Reports extends React.Component<{}, State> {
 		let parameters: any[] = this.state.selectedAccounts.map(a => a.bankAccountId);
 
 		//selectedDateRange
-		let start = this.state.selectedDateRange.start();
-		let end = this.state.selectedDateRange.end();
+		let start = this.state.selectedDateRange.getStart();
+		let end = this.state.selectedDateRange.getEnd();
 		if (start && end) {
 			query += "AND date >= ? AND date <= ? ";
 			parameters.push(dateTransformer.to(start));

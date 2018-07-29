@@ -7,18 +7,86 @@ import { Category, BankAccount } from '../entities';
 
 let CategorySelect = Select.ofType<Category>();
 
+type DateRangeLength = 'month' | 'year';
+
 export interface DateRange {
-	name: string;
-	start: () => dayjs.Dayjs | null;
-	end: () => dayjs.Dayjs | null;
+	getName(): string;
+	getStart(): dayjs.Dayjs | null;
+	getEnd(): dayjs.Dayjs | null;
+
+	createPrevious(): DateRange;
+	createNext(): DateRange;
+}
+class GeneratedDateRange implements DateRange {
+	constructor(private length: DateRangeLength, private offset: number) {
+	}
+
+	getName(): string {
+		switch (this.length) {
+
+			case 'month':
+				if (this.offset == 0) {
+					return 'This Month';
+				}
+				if (this.offset == -1) {
+					return 'Last Month'
+				}
+
+				return this.getStart()!.format('YYYY-MM');
+			case 'year':
+				if (this.offset == 0) {
+					return 'This Year';
+				}
+				if (this.offset == -1) {
+					return 'Last Year';
+				}
+				return this.getStart().format('YYYY');
+			default:
+				throw new Error('Not sure how to name this DRL ' + this.length)
+		}
+	}
+
+	getStart(): dayjs.Dayjs {
+		return dayjs().startOf(this.length).add(this.offset, this.length);
+	}
+
+	getEnd(): dayjs.Dayjs {
+		return dayjs().startOf(this.length).add(this.offset, this.length).add(1, this.length);
+	}
+
+	createPrevious(): DateRange {
+		return new GeneratedDateRange(this.length, this.offset - 1);
+	}
+
+	createNext(): DateRange {
+		return new GeneratedDateRange(this.length, this.offset + 1);
+	}
+}
+class StaticDateRange implements DateRange {
+	constructor (private start: dayjs.Dayjs | null, private end: dayjs.Dayjs | null, private name?: string) {
+	}
+
+	getName() {
+		if (this.name) {
+			return this.name;
+		}
+
+		return this.start!.format('YYYY-MM-DD') + " - " + this.end!.format('YYYY-MM-DD');
+	}
+
+	getStart() { return this.start; }
+	getEnd() { return this.end; }
+
+	createPrevious() { return this; }
+	createNext() { return this; }
 }
 
 export const DateRanges = new Array<DateRange>(
-	{ name: 'This Month', start: () => dayjs().startOf('month'), end: () => dayjs().endOf('month') },
-	{ name: 'Last Month', start: () => dayjs().subtract(1, 'month').startOf('month'), end: () => dayjs().subtract(1, 'month').endOf('month') },
-	{ name: 'This Year', start: () => dayjs().startOf('year'), end: () => dayjs().endOf('year') },
-	{ name: 'Last Year', start: () => dayjs().subtract(1, 'year').startOf('year'), end: () => dayjs().subtract(1, 'year').endOf('year') },
-	{ name: 'All Time', start: () => null, end: () => null }
+	new GeneratedDateRange('month', 0),
+	new GeneratedDateRange('month', -1),
+	new GeneratedDateRange('year', 0),
+	new GeneratedDateRange('year', -1),
+	new StaticDateRange(null, null, 'All Time')
 );
 
 export interface FilterBarProps {
@@ -58,19 +126,19 @@ export class FilterBar extends React.Component<FilterBarProps, State> {
 			<NavbarGroup align={Alignment.LEFT}>
 
 				<ButtonGroup>
-					<Button icon="chevron-left" />
+					<Button icon="chevron-left" onClick={() => this.props.selectDateRange(this.props.selectedDateRange.createPrevious())} />
 					<Popover>
-						<Button icon="calendar" text={this.props.selectedDateRange.name} />
+						<Button icon="calendar" text={this.props.selectedDateRange.getName()} />
 						<Menu>
-							{DateRanges.map(d => <MenuItem
-								key={d.name}
-								text={d.name}
+							{DateRanges.map((d, i) => <MenuItem
+								key={i}
+								text={d.getName()}
 								onClick={() => this.props.selectDateRange(d)}
 							/>
 							)}
 						</Menu>
 					</Popover>
-					<Button icon="chevron-right" />
+					<Button icon="chevron-right" onClick={() => this.props.selectDateRange(this.props.selectedDateRange.createNext())} />
 				</ButtonGroup>
 
 				<NavbarDivider />
