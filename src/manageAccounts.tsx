@@ -1,28 +1,21 @@
 import * as React from 'react';
 import { lazyInject, Database, Services } from './services';
 import { BankAccount } from './entities';
-import { Card, ControlGroup, InputGroup, Button, Intent, Toaster } from '@blueprintjs/core';
+import { Card, Button, Intent, Toaster } from '@blueprintjs/core';
+import { CreateAccount } from './components/createAccount';
 
 interface State {
 	accounts?: BankAccount[];
-
-	createAccountNumber: string;
-	createAccountName: string;
 }
 
 export class ManageAccounts extends React.Component<{}, State> {
 	@lazyInject(Services.Database)
 	database!: Database;
 
-	@lazyInject(Services.Toaster)
-	private toaster!: Toaster;
-
 	constructor(props: {}) {
 		super(props);
 
 		this.state = {
-			createAccountNumber: '',
-			createAccountName: ''
 		};
 
 		this.load();
@@ -34,49 +27,6 @@ export class ManageAccounts extends React.Component<{}, State> {
 		this.setState({ accounts });
 	}
 
-	async addAccount() {
-		if (!this.state.createAccountNumber) {
-			this.toaster.show({
-				intent: Intent.DANGER,
-				message: 'Please enter an Account Number'
-			});
-			return;
-		}
-		if (!this.state.createAccountName) {
-			this.toaster.show({
-				intent: Intent.DANGER,
-				message: "Please enter an Account Name"
-			});
-			return;
-		}
-		if (!this.state.createAccountNumber.match('^([0-9-])*$')) {
-			this.toaster.show({
-				intent: Intent.DANGER,
-				message: "Invalid Account Name, expected only numbers and -"
-			});
-			return;
-		}
-
-		if (this.state.accounts && this.state.accounts.some(a => a.bankAccountNumber == this.state.createAccountNumber)) {
-			this.toaster.show({
-				intent: Intent.DANGER,
-				message: "This account number already exists"
-			});
-			return;
-		}
-
-		await this.database.bankAccounts.insert({
-			bankAccountNumber: this.state.createAccountNumber,
-			name: this.state.createAccountName
-		});
-
-		await this.load();
-
-		this.setState({
-			createAccountName: '',
-			createAccountNumber: ''
-		});
-	}
 
 	async deleteAccount(a: BankAccount) {
 		if (!confirm("Are you sure you want to delete this account? All transactions in it will be deleted")) {
@@ -114,12 +64,7 @@ export class ManageAccounts extends React.Component<{}, State> {
 				</table>
 			</Card>
 			<Card>
-				<h3>Add Account</h3>
-				<ControlGroup vertical>
-					<InputGroup leftIcon="bank-account" placeholder="Account Number" value={this.state.createAccountNumber} onChange={(e: React.ChangeEvent<HTMLInputElement>) => this.setState({ createAccountNumber: e.target.value })} />
-					<InputGroup leftIcon="bookmark" placeholder="Name" value={this.state.createAccountName} onChange={(e: React.ChangeEvent<HTMLInputElement>) => this.setState({ createAccountName: e.target.value })} />
-					<Button large text="Add Account" intent={Intent.PRIMARY} onClick={() => this.addAccount()} />
-				</ControlGroup>
+				<CreateAccount accountCreated={() => this.load()} />
 			</Card>
 		</div>;
 	}

@@ -1,8 +1,9 @@
 import * as React from 'react';
-import { NonIdealState, Tag, Intent, Button, Toaster, Tooltip, Icon, Callout } from '@blueprintjs/core';
-import { OfxParser, lazyInject, Services, Database, ImportHelper, ParseTransaction } from './services';
+import { NonIdealState, Tag, Intent, Button, Toaster, Tooltip, Icon, Callout, Card } from '@blueprintjs/core';
+import { OfxParser, lazyInject, Services, Database, ImportHelper, ParseTransaction, History } from './services';
 import { BankAccount, BankTransaction } from './entities';
 import { ImportFile } from './entities/importFile';
+import { CreateAccount } from './components/createAccount';
 
 interface State {
 	dropzoneActive: boolean;
@@ -12,6 +13,8 @@ interface State {
 
 	importFile?: ImportFile;
 	transactions?: BankTransaction[];
+
+	addAccountNumber?: string;
 }
 
 export class Import extends React.Component<{}, State> {
@@ -21,6 +24,9 @@ export class Import extends React.Component<{}, State> {
 
 	@lazyInject(Services.Toaster)
 	private toaster!: Toaster;
+
+	@lazyInject(Services.OfxParser)
+	private ofxParser!: OfxParser;
 
 	constructor(props: any) {
 		super(props);
@@ -44,7 +50,7 @@ export class Import extends React.Component<{}, State> {
 			//Import as OFX
 			try {
 				let text = await new Response(file).text();
-				let parsed = new OfxParser().parse(file.name, text);
+				let parsed = this.ofxParser.parse(file.name, text);
 				let helper = new ImportHelper(this.database);
 				let result = await helper.dupeCheck(parsed);
 
@@ -54,11 +60,19 @@ export class Import extends React.Component<{}, State> {
 					importFile: parsed.importFile,
 					transactions: result.newTransactions
 				});
-			} catch (err) {
+			} catch (e) {
+				const err: Error = e;
+				let fixAction = undefined;
+				if (err.message.startsWith(ImportHelper.BankAccountNotFoundMessageStart)) {
+					let acc = err.message.substr(ImportHelper.BankAccountNotFoundMessageStart.length);
+					fixAction = { text: 'Add', onClick: () => this.setState({ addAccountNumber: acc }) };
+				}
+
 				this.toaster.show({
 					intent: Intent.DANGER,
-					message: (err as Error).message
-				})
+					message: (err as Error).message,
+					action: fixAction
+				});
 			}
 		} else if (file.name.toLowerCase().endsWith(".csv")) {
 			//Assume buxfer CSV
@@ -104,6 +118,9 @@ export class Import extends React.Component<{}, State> {
 	}
 
 	render() {
+		if (this.state.addAccountNumber) {
+			return <Card><CreateAccount accountNumber={this.state.addAccountNumber} accountCreated={() => this.setState({ addAccountNumber: undefined })} /></Card>
+		}
 		if (!this.state.bankAccount || !this.state.duplicates || !this.state.transactions) {
 			return <div style={{ position: 'relative', width: '100%', height: 'calc(100% - 50px)' }} className={this.state.dropzoneActive ? 'dropzone-active' : ''} onDrop={d => this.onDrop(d)} onDragOver={e => this.onDragEnter(e)} onDragLeave={() => this.onDragLeave()}>
 				<NonIdealState visual='import' title="Drag on a file to import">

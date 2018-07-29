@@ -10,6 +10,8 @@ export interface DupeCheckResult {
 
 /** Helps manipulate data for inserting in to the database */
 export class ImportHelper {
+	static BankAccountNotFoundMessageStart = "Bank account not found: ";
+
 	constructor(private database: Database) {
 	}
 
@@ -36,7 +38,7 @@ export class ImportHelper {
 		});
 
 		if (!account) {
-			throw new Error("Bank account not found: " + values.bankAccountNumber)
+			throw new Error(ImportHelper.BankAccountNotFoundMessageStart + values.bankAccountNumber)
 		}
 
 		let existing = await this.database.transactions.find({

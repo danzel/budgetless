@@ -6,21 +6,17 @@ import { OfxParser } from './ofxParser';
 import { createDatabase } from './database';
 import { createHashHistory } from 'history';
 import { ToasterInstance } from './toaster';
+import { Services } from './serviceEnum';
 
 export { Database } from './database';
 export * from './ofxParser';
 export * from './parseResult';
 export * from './importHelper';
 export { History } from 'history';
+export * from './serviceEnum';
 
 export const container = new Container();
 
-export const Services = {
-	Database: Symbol(),
-	History: Symbol(),
-	OfxParser: Symbol(),
-	Toaster: Symbol()
-}
 
 container.bind(Services.Database).toConstantValue(createDatabase());
 container.bind(Services.History).toConstantValue(createHashHistory());
