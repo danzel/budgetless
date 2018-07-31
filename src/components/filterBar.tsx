@@ -1,7 +1,8 @@
 import * as React from 'react';
 import * as dayjs from 'dayjs';
-import { Navbar, NavbarGroup, Alignment, ButtonGroup, Button, Popover, Menu, MenuItem, NavbarDivider } from '@blueprintjs/core';
+import { Navbar, NavbarGroup, Alignment, ButtonGroup, Button, Popover, Menu, MenuItem, NavbarDivider, Position, Intent } from '@blueprintjs/core';
 import { Select } from '@blueprintjs/select';
+import { DateRangePicker } from '@blueprintjs/datetime';
 
 import { Category, BankAccount } from '../entities';
 
@@ -63,7 +64,7 @@ class GeneratedDateRange implements DateRange {
 	}
 }
 class StaticDateRange implements DateRange {
-	constructor (private start: dayjs.Dayjs | null, private end: dayjs.Dayjs | null, private name?: string) {
+	constructor(private start: dayjs.Dayjs | null, private end: dayjs.Dayjs | null, private name?: string) {
 	}
 
 	getName() {
@@ -103,13 +104,24 @@ export interface FilterBarProps {
 }
 
 interface State {
-
+	customDateRange: [Date | undefined, Date | undefined]
 }
 
 export class FilterBar extends React.Component<FilterBarProps, State> {
+	constructor(props: FilterBarProps) {
+		super(props);
+
+		this.state = {
+			customDateRange: [undefined, undefined]
+		};
+	}
 
 	private isAccountSelected(account: BankAccount): boolean {
 		return this.props.selectedAccounts.some(a => a == account);
+	}
+
+	private loadCustomDateRange() {
+		this.props.selectDateRange(new StaticDateRange(dayjs(this.state.customDateRange[0]), dayjs(this.state.customDateRange[1])));
 	}
 
 	render() {
@@ -122,20 +134,31 @@ export class FilterBar extends React.Component<FilterBarProps, State> {
 			}
 		}
 
+		const canLoadCustom = !!(this.state.customDateRange[0] && this.state.customDateRange[1]);
+		let customButtonText = canLoadCustom ? "Load " + dayjs(this.state.customDateRange[0]!).format("YYYY-MM-DD") + " to " + dayjs(this.state.customDateRange[1]!).format("YYYY-MM-DD")
+			: "Select date range";
+
 		return <Navbar>
 			<NavbarGroup align={Alignment.LEFT}>
 
 				<ButtonGroup>
 					<Button icon="chevron-left" onClick={() => this.props.selectDateRange(this.props.selectedDateRange.createPrevious())} />
-					<Popover>
+					<Popover key={this.props.selectedDateRange.getName()} position={Position.BOTTOM}>
 						<Button icon="calendar" text={this.props.selectedDateRange.getName()} />
-						<Menu>
+						<Menu className="filter-bar-date-menu">
 							{DateRanges.map((d, i) => <MenuItem
 								key={i}
 								text={d.getName()}
 								onClick={() => this.props.selectDateRange(d)}
-							/>
-							)}
+							/>)}
+							<Popover position={Position.RIGHT_BOTTOM}>
+								<MenuItem text="Custom" shouldDismissPopover={false} />
+								<>
+									{/* TODO: Specify mindate from the database */}
+									<DateRangePicker contiguousCalendarMonths={false} shortcuts={false} onChange={dates => this.setState({ customDateRange: dates })} />
+									<Button text={customButtonText} fill disabled={!canLoadCustom} intent={Intent.PRIMARY} onClick={() => this.loadCustomDateRange()} />
+								</>
+							</Popover>
 						</Menu>
 					</Popover>
 					<Button icon="chevron-right" onClick={() => this.props.selectDateRange(this.props.selectedDateRange.createNext())} />
