@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { NonIdealState, Tag, Intent, Button, Toaster, Tooltip, Icon, Callout, Card } from '@blueprintjs/core';
-import { OfxParser, lazyInject, Services, Database, ImportHelper, ParseTransaction, History } from './services';
+import { NonIdealState, Tag, Intent, Button, Toaster, Tooltip, Icon, Callout, Card, Spinner } from '@blueprintjs/core';
+import { OfxParser, lazyInject, Services, Database, ImportHelper, ParseTransaction, History, BalanceRecalculator } from './services';
 import { BankAccount, BankTransaction } from './entities';
 import { ImportFile } from './entities/importFile';
 import { CreateAccount } from './components/createAccount';
@@ -18,6 +18,9 @@ interface State {
 }
 
 export class Import extends React.Component<{}, State> {
+
+	@lazyInject(Services.BalanceRecalculator)
+	private balanceRecalculator!: BalanceRecalculator;
 
 	@lazyInject(Services.Database)
 	private database!: Database;
@@ -90,7 +93,16 @@ export class Import extends React.Component<{}, State> {
 	}
 
 	async import() {
+		let toastId = this.toaster.show({
+			message: <><Spinner small /> Saving transactions</>,
+			timeout: 0
+		});
+
 		await this.database.entityManager.save([this.state.importFile, this.state.importFile!.importFileContents, ...this.state.transactions!]);
+
+		await this.balanceRecalculator.recalculateAccountBalanceFromInitialZero(this.state.bankAccount!);
+
+		this.toaster.dismiss(toastId);
 
 		this.toaster.show({
 			intent: Intent.SUCCESS,

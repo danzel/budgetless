@@ -65,12 +65,14 @@ export class OfxParser {
 			throw new Error("Failed to find final balance: " + err);
 		}
 
-		//Back-calculate balance
+		//Back-calculate balance, this assumes the starting balance is the 'current' balance
 		for (let i = transactions.length - 1; i >= 0; i--){
 			let t = transactions[i];
 			t.balance = balance;
 			balance -= t.amount;
 		}
+
+		console.log(transactions[0].balance, transactions[transactions.length - 1].balance);
 
 		return {
 			bankAccountNumber,
