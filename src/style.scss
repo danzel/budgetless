@@ -41,3 +41,9 @@ html, body, #app, .full-height {
 		vertical-align: top;
 	}
 }
+
+.filter-bar-date-menu {
+	.pt-popover-wrapper {
+		display: initial !important;
+	}
+}
