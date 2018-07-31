@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, Index } from 'typeorm';
 import { Category } from './category';
 import { BankTransaction } from './bankTransaction';
 
@@ -11,6 +11,7 @@ export class CategoryRule {
 	category: Category;
 
 	@Column()
+    @Index({ unique: true })
 	descriptionContains: string;
 
 	constructor(category: Category, descriptionContains: string) {

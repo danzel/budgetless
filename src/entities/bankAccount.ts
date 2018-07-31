@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany, Unique } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany, Unique, Index } from 'typeorm';
 import { BankTransaction } from './bankTransaction';
 
 @Entity()
@@ -8,9 +8,11 @@ export class BankAccount {
 	bankAccountId?: number;
 
 	@Column()
+    @Index({ unique: true })
 	bankAccountNumber: string;
 
 	@Column()
+    @Index({ unique: true })
 	name: string;
 
 	@OneToMany(type => BankTransaction, bt => bt.bankAccount)

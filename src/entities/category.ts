@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany, Index } from 'typeorm';
 import { BankTransaction } from './bankTransaction';
 import { CategoryRule } from './categoryRule';
 
@@ -14,6 +14,7 @@ export class Category {
 	rules?: CategoryRule[];
 
 	@Column()
+    @Index({ unique: true })
 	name: string;
 
 	constructor(name: string) {
