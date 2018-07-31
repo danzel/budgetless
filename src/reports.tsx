@@ -6,6 +6,7 @@ import { PieChart, Cell, Pie, Tooltip, LineChart, Line, XAxis, YAxis, Legend } f
 import { NavbarGroup, Alignment, NavbarDivider, ButtonGroup, Button, Icon } from '../node_modules/@blueprintjs/core';
 import { ExpenseIncomeReport } from './components/reports/expenseIncomeReport';
 import { ReportsMode } from './components/reports/reportsMode';
+import { NetWorthReport } from './components/reports/netWorthReport';
 
 interface State {
 	accounts?: BankAccount[];
@@ -94,7 +95,11 @@ export class Reports extends React.Component<{}, State> {
 				</NavbarGroup>
 			</FilterBar>
 
-			<ExpenseIncomeReport mode={this.state.mode} selectedAccounts={this.state.selectedAccounts} selectedCategory={this.state.selectedCategory} selectedDateRange={this.state.selectedDateRange} />
+			{this.state.mode == ReportsMode.NetWorth ? 
+				<NetWorthReport selectedAccounts={this.state.selectedAccounts} selectedCategory={this.state.selectedCategory} selectedDateRange={this.state.selectedDateRange} />
+				:
+				<ExpenseIncomeReport mode={this.state.mode} selectedAccounts={this.state.selectedAccounts} selectedCategory={this.state.selectedCategory} selectedDateRange={this.state.selectedDateRange} />
+			}
 		</div>;
 	}
 }

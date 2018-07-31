@@ -61,8 +61,6 @@ export class ExpenseIncomeReport extends React.Component<ExpenseIncomeReportProp
 	}
 
 	componentDidUpdate(prevProps: ExpenseIncomeReportProps) {
-		console.log('did update');
-
 		const props = this.props;
 		if (prevProps.mode != props.mode || prevProps.selectedAccounts != props.selectedAccounts || prevProps.selectedCategory != props.selectedCategory || prevProps.selectedDateRange != props.selectedDateRange)
 			this.loadAmounts();
