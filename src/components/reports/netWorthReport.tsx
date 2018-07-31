@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { LineChart, XAxis, YAxis, CartesianGrid, Tooltip, Line } from 'recharts';
+import { LineChart, XAxis, YAxis, CartesianGrid, Tooltip, Line, ResponsiveContainer } from 'recharts';
 import { BankAccount, Category, dateTransformer } from '../../entities';
 import { DateRange } from '../filterBar';
 import { lazyInject, Services, Database } from '../../services';
@@ -59,7 +59,7 @@ export class NetWorthReport extends React.Component<NetWorthReportProps, State> 
 				},
 				take: 1
 			})
-			end = lastTx[0].date;
+			end = lastTx[0].date.add(1, 'month');
 		}
 		end = end.startOf('month')
 
@@ -111,12 +111,14 @@ export class NetWorthReport extends React.Component<NetWorthReportProps, State> 
 			return null;
 		}
 
-		return <LineChart width={600} height={300} data={this.state.data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-			<XAxis dataKey="month" />
-			<YAxis />
-			<CartesianGrid strokeDasharray="3 3" />
-			<Tooltip />
-			<Line type="monotone" dataKey="netWorth" stroke="#8884d8" activeDot={{ r: 8 }} />
-		</LineChart>
+		return <ResponsiveContainer height={500} width='100%'>
+			<LineChart data={this.state.data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+				<XAxis dataKey="month" />
+				<YAxis />
+				<CartesianGrid strokeDasharray="3 3" />
+				<Tooltip formatter={(e: any) => e.toFixed(2)} />
+				<Line type="monotone" dataKey="netWorth" stroke="#8884d8" activeDot={{ r: 8 }} />
+			</LineChart>
+		</ResponsiveContainer>
 	}
 }
