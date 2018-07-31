@@ -283,6 +283,7 @@ export class BankTransactionsList extends React.Component<{}, State> {
 				width: 150,
 				accessor: 'category',
 				Cell: d => <CategorySelect
+					key={(d.original as BankTransaction).bankTransactionId}
 					disabled={this.state.disableAllTableSelects}
 					items={categoriesForSelecting}
 					onQueryChange={q => AddCategory.name = q}
