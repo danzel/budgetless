@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as commaNumber from 'comma-number';
-import { Icon } from '@blueprintjs/core';
+import { Icon, NonIdealState } from '@blueprintjs/core';
 import { ReportsMode } from './reportsMode';
 import { PieChart, Pie, Cell, Tooltip } from 'recharts';
 import { dateTransformer, EveryCategory, UncategorisedCategory, BankAccount, Category } from '../../entities';
@@ -147,6 +147,10 @@ export class ExpenseIncomeReport extends React.Component<ExpenseIncomeReportProp
 		var sum = 0;
 		results.forEach(r => sum += r.totalAmount);
 
+		if (results.length == 0) {
+			return <NonIdealState title="No Results" visual="graph-remove" />;
+		}
+
 		return <div>
 			<div className='column'>
 				{this.renderChart(results, sum)}
@@ -168,10 +172,6 @@ export class ExpenseIncomeReport extends React.Component<ExpenseIncomeReportProp
 	}
 
 	private renderChart(results: BankTransactionGroup[], sum: number) {
-		if (results.length == 0) {
-			return "No results";
-		}
-
 		results = results.map(r => { return { name: r.name + ' (' + Math.floor(100 * r.totalAmount / sum) + '%)', totalAmount: r.totalAmount } });
 
 		return <>
