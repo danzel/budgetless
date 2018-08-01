@@ -183,7 +183,6 @@ export class BankTransactionsList extends React.Component<{}, State> {
 		//recreate it so we can replace it in the react state
 		let recreated = new BankTransaction(t.bankAccount, category, t.importFile, t.date, t.amount, t.description, t.balance);
 		recreated.bankTransactionId = t.bankTransactionId;
-		recreated.calculatedBalance = t.calculatedBalance;
 		recreated.userNote = t.userNote;
 
 		if (category.categoryId == UncategorisedCategory.categoryId) {
