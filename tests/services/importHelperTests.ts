@@ -21,7 +21,8 @@ test('ImportHelper finds no dupe for first transaction', async t => withDatabase
 				amount: 100,
 				balance: 100,
 				date: dayjs('2018-01-01'),
-				note: 'SOME TRANSACTION'
+				note: 'SOME TRANSACTION',
+				uniqueId: 'uid1'
 			}
 		]
 	})
@@ -44,6 +45,7 @@ test('ImportHelper finds dupe', async t => withDatabase(async db => {
 		date: dayjs('2018-01-01'),
 		description: 'SOME TRANSACTION',
 		userNote: '',
+		uniqueId: 'uid1',
 		bankAccount: account
 	})
 
@@ -55,7 +57,8 @@ test('ImportHelper finds dupe', async t => withDatabase(async db => {
 				amount: 100,
 				balance: 100,
 				date: dayjs('2018-01-01'),
-				note: 'SOME TRANSACTION'
+				note: 'SOME TRANSACTION',
+				uniqueId: 'uid1'
 			}
 		]
 	})
@@ -75,7 +78,7 @@ test('ImportHelper applies rules', async t => withDatabase(async db => {
 	let category: Category = await db.categories.save({
 		name: 'test'
 	});
-	let rule = await db.rules.save({
+	await db.rules.save({
 		category: category,
 		descriptionContains: 'some'
 	});
@@ -88,7 +91,8 @@ test('ImportHelper applies rules', async t => withDatabase(async db => {
 				amount: 100,
 				balance: 100,
 				date: dayjs('2018-01-01'),
-				note: 'SOME TRANSACTION'
+				note: 'SOME TRANSACTION',
+				uniqueId: 'uid1'
 			}
 		]
 	})

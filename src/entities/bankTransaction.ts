@@ -52,16 +52,20 @@ export class BankTransaction {
 
 	@Column()
 	userNote: string;
+	
+	//The unique ID given to this transaction by the bank. FITID in OFX files. Unique per bankAccount
+	@Column()
+	uniqueId: string;
 
-	constructor(bankAccount: BankAccount, category: Category | null, importFile: ImportFile, date: dayjs.Dayjs, amount: number, description: string, balance: number) {
+	constructor(bankAccount: BankAccount, category: Category | null, importFile: ImportFile, date: dayjs.Dayjs, amount: number, description: string, balance: number, uniqueId: string) {
 		this.bankAccount = bankAccount;
 		this.category = category;
 		this.importFile = importFile;
 		this.date = date;
 		this.amount = amount;
 		this.description = description;
-
 		this.balance = balance;
+		this.uniqueId = uniqueId;
 
 		this.userNote = '';
 	}

@@ -185,7 +185,7 @@ export class BankTransactionsList extends React.Component<{}, State> {
 
 	private async setTransactionCategory(t: BankTransaction, category: Category) {
 		//recreate it so we can replace it in the react state
-		let recreated = new BankTransaction(t.bankAccount, category, t.importFile, t.date, t.amount, t.description, t.balance);
+		let recreated = new BankTransaction(t.bankAccount, category, t.importFile, t.date, t.amount, t.description, t.balance, t.uniqueId);
 		recreated.bankTransactionId = t.bankTransactionId;
 		recreated.userNote = t.userNote;
 

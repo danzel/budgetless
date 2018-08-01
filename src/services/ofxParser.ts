@@ -50,6 +50,7 @@ export class OfxParser {
 					amount: parseFloat(t.TRNAMT[0]),
 					date: this.parseDate(t.DTPOSTED[0]),
 					note: t.MEMO[0],
+					uniqueId: t.FITID[0],
 					balance: 0 //Calculated below
 				})
 			})

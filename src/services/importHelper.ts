@@ -33,7 +33,7 @@ export class ImportHelper {
 			}
 		});
 
-		let account = await this.database.bankAccounts.findOne({
+		const account = await this.database.bankAccounts.findOne({
 			bankAccountNumber: values.bankAccountNumber
 		});
 
@@ -42,8 +42,10 @@ export class ImportHelper {
 		}
 
 		let existing = await this.database.transactions.find({
-			date: Between(dateTransformer.to(minDate), dateTransformer.to(maxDate)),
-			bankAccount: account
+			where: {
+				date: Between(dateTransformer.to(minDate), dateTransformer.to(maxDate)),
+				bankAccount: account
+			}
 		});
 
 		let result: DupeCheckResult = {
@@ -52,10 +54,10 @@ export class ImportHelper {
 		};
 
 		values.transactions.forEach(t => {
-			if (existing.some(e => e.amount == t.amount && e.date.isSame(t.date) && e.description == t.note)) {
+			if (existing.some(e => e.uniqueId == t.uniqueId)) {
 				result.duplicates.push(t);
 			} else {
-				result.newTransactions.push(new BankTransaction(account!, null, values.importFile, t.date, t.amount, t.note, t.balance));
+				result.newTransactions.push(new BankTransaction(account, null, values.importFile, t.date, t.amount, t.note, t.balance, t.uniqueId));
 			}
 		})
 

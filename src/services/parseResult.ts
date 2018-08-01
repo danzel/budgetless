@@ -14,6 +14,9 @@ export interface ParseTransaction {
 
 	//The balance after this transaction
 	balance: number;
+
+	//The unique ID given to this transaction by the bank. FITID in OFX files.
+	uniqueId: string;
 }
 
 export interface ParseResult {
