@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { Route, Switch, Link } from 'react-router-dom';
 
-import { BuxferImport } from './buxferImport';
 import { Import } from './import';
 import { Popover, Position, Menu, MenuItem, Navbar, NavbarGroup, Alignment } from '@blueprintjs/core';
 import { lazyInject, Services, History } from './services';
@@ -33,9 +32,6 @@ export class App extends React.Component<{}, State>{
 				<MenuItem text="Accounts" onClick={() => this.history.push('/manage-accounts')} />
 				<MenuItem text="Categories" onClick={() => this.history.push('/manage-categories')} />
 				<MenuItem text="Rules" onClick={() => this.history.push('/manage-rules')} />
-				<MenuItem text="Tools">
-					<MenuItem text="Import from Buxfer" onClick={() => this.history.push('/buxfer-import')} />
-				</MenuItem>
 			</Menu>
 		);
 
@@ -58,7 +54,6 @@ export class App extends React.Component<{}, State>{
 						</NavbarGroup>
 				</Navbar>
 				<Switch>
-					<Route path='/buxfer-import' component={BuxferImport} />
 					<Route path='/import' component={Import} />
 					<Route path='/manage-accounts' component={ManageAccounts} />
 					<Route path='/manage-categories' component={ManageCategories} />
