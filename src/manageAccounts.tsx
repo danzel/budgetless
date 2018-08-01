@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { lazyInject, Database, Services } from './services';
 import { BankAccount } from './entities';
-import { Card, Button, Intent, Toaster } from '@blueprintjs/core';
+import { Card, Button, Intent, Toaster, Elevation } from '@blueprintjs/core';
 import { CreateAccount } from './components/createAccount';
 
 interface State {
@@ -43,29 +43,31 @@ export class ManageAccounts extends React.Component<{}, State> {
 			return <div>Loading</div>;
 		}
 
-		return <div className="manage-accounts">
-			<h1>Manage Accounts</h1>
-			<Card >
-				<h3>Accounts</h3>
-				<table className="pt-html-table pt-html-table-striped">
-					<thead>
-						<tr>
-							<th>Name</th>
-							<th>Number</th>
-						</tr>
-					</thead>
-					<tbody>
-						{this.state.accounts.map(a => <tr key={a.bankAccountId}>
-							<td>{a.name}</td>
-							<td>{a.bankAccountNumber}</td>
-							<td><Button minimal intent={Intent.DANGER} icon="delete" onClick={() => this.deleteAccount(a)} /></td>
-						</tr>)}
-					</tbody>
-				</table>
-			</Card>
-			<Card>
-				<CreateAccount accountCreated={() => this.load()} />
-			</Card>
+		return <div className="manage-accounts boxed-page">
+			<div className="thin">
+				<h1>Manage Accounts</h1>
+				<Card elevation={Elevation.THREE}>
+					<h3>Accounts</h3>
+					<table className="pt-html-table pt-html-table-striped pt-fill">
+						<thead>
+							<tr>
+								<th>Name</th>
+								<th>Number</th>
+							</tr>
+						</thead>
+						<tbody>
+							{this.state.accounts.map(a => <tr key={a.bankAccountId}>
+								<td style={{ width: '100%' }}>{a.name}</td>
+								<td style={{ whiteSpace: 'nowrap' }}>{a.bankAccountNumber}</td>
+								<td><Button minimal intent={Intent.DANGER} icon="delete" onClick={() => this.deleteAccount(a)} /></td>
+							</tr>)}
+						</tbody>
+					</table>
+				</Card>
+				<Card elevation={Elevation.THREE}>
+					<CreateAccount accountCreated={() => this.load()} />
+				</Card>
+			</div>
 		</div>;
 	}
 }

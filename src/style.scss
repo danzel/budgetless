@@ -1,3 +1,5 @@
+@import 'node_modules/@blueprintjs/core/lib/scss/variables';
+
 html, body, #app, .full-height {
 	height: 100%;
 }
@@ -46,5 +48,20 @@ html, body, #app, .full-height {
 .filter-bar-date-menu {
 	.pt-popover-wrapper {
 		display: initial !important;
+	}
+}
+
+.boxed-page {
+	background-color: $light-gray5;
+	height: 100%;
+
+	.thin {
+		margin-left: auto;
+		margin-right: auto;
+		width: 600px;
+	}
+
+	.pt-card {
+		margin-bottom: 20px;
 	}
 }
