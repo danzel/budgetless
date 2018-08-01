@@ -46,24 +46,14 @@ export class BankTransaction {
 	@Column()
 	description: string;
 
-	//The balance after this transaction, provided by the bank
-	@Column('integer', {
-		nullable: true,
-		transformer: moneyTransformer
-	})
-	balance: number | null;
-
-	//The balance after this transaction, as calculated internally
-	@Column('integer', {
-		nullable: true,
-		transformer: moneyTransformer
-	})
-	calculatedBalance: number | null;
+	//The balance after this transaction
+	@Column('integer', { transformer: moneyTransformer })
+	balance: number;
 
 	@Column()
 	userNote: string;
 
-	constructor(bankAccount: BankAccount, category: Category | null, importFile: ImportFile, date: dayjs.Dayjs, amount: number, description: string, balance: number | null) {
+	constructor(bankAccount: BankAccount, category: Category | null, importFile: ImportFile, date: dayjs.Dayjs, amount: number, description: string, balance: number) {
 		this.bankAccount = bankAccount;
 		this.category = category;
 		this.importFile = importFile;
@@ -72,7 +62,6 @@ export class BankTransaction {
 		this.description = description;
 
 		this.balance = balance;
-		this.calculatedBalance = balance;
 
 		this.userNote = '';
 	}

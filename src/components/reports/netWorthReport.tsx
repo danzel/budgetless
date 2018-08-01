@@ -90,7 +90,7 @@ export class NetWorthReport extends React.Component<NetWorthReportProps, State> 
 				});
 
 				if (t.length > 0) {
-					sum += t[0].balance!;
+					sum += t[0].balance;
 				}
 			}
 
