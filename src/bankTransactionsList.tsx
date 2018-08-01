@@ -125,6 +125,10 @@ export class BankTransactionsList extends React.Component<{}, State> {
 		if (desc.endsWith(' ;')) {
 			desc = desc.substr(0, desc.length - 2);
 		}
+		if (desc.toLowerCase().startsWith("pos w/d ")) {
+			desc = desc.substr(8);
+		}
+		desc = desc.trim();
 
 		this.setState({
 			createRuleCategory: category,
