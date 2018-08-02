@@ -8,7 +8,7 @@ import { ImportFile } from "../entities/importFile";
 export class OfxParser {
 	parse(fileName: string, fileContents: string): ParseResult {
 
-		let lines = fileContents.replace(/\r/g, '').split('\n');
+		let lines = fileContents.replace(/\r/g, '').replace(/&/g, '&amp;').split('\n');
 		//Skip the header, we don't do anything with it yet
 		let start = lines.indexOf('<OFX>');
 
@@ -17,7 +17,7 @@ export class OfxParser {
 			let line = lines[i];
 
 			//Lines that should have closing tags
-			if (line[line.length - 1] != '>') {
+			if (line.length > 1 && (line == '<NAME>' || line == '<MEMO>' || line[line.length - 1] != '>')) {
 				let tagEnd = line.lastIndexOf('>')
 
 				lines[i] = line + '</' + line.substring(1, tagEnd + 1);
@@ -26,6 +26,7 @@ export class OfxParser {
 
 
 		fileContents = lines.slice(start).join('\n')
+		//console.log(fileContents);
 
 		let error;
 		let result: any;
@@ -49,7 +50,7 @@ export class OfxParser {
 				transactions.push({
 					amount: parseFloat(t.TRNAMT[0]),
 					date: this.parseDate(t.DTPOSTED[0]),
-					note: t.MEMO[0],
+					note: t.MEMO ? t.MEMO[0] : t.NAME[0],
 					uniqueId: t.FITID[0],
 					balance: 0 //Calculated below
 				})
@@ -67,7 +68,7 @@ export class OfxParser {
 		}
 
 		//Back-calculate balance, this assumes the starting balance is the 'current' balance
-		for (let i = transactions.length - 1; i >= 0; i--){
+		for (let i = transactions.length - 1; i >= 0; i--) {
 			let t = transactions[i];
 			t.balance = balance;
 			balance -= t.amount;
