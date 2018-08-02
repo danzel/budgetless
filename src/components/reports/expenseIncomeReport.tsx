@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as commaNumber from 'comma-number';
-import { Icon, NonIdealState } from '@blueprintjs/core';
+import { Icon, NonIdealState, Card, Elevation } from '@blueprintjs/core';
 import { ReportsMode } from './reportsMode';
 import { PieChart, Pie, Cell, Tooltip } from 'recharts';
 import { dateTransformer, EveryCategory, UncategorisedCategory, BankAccount, Category } from '../../entities';
@@ -151,21 +151,26 @@ export class ExpenseIncomeReport extends React.Component<ExpenseIncomeReportProp
 			return <NonIdealState title="No Results" visual="graph-remove" />;
 		}
 
-		return <div>
-			<div className='column'>
-				{this.renderChart(results, sum)}
-			</div>
-			<div className='column'>
-				<table className="pt-table">
-					<tbody>
-						{results.map((r, i) => <tr key={r.name}>
-							<td><Icon icon='symbol-circle' color={Colors[i % Colors.length]} /></td>
-							<td>{r.name}</td>
-							<td>{commaNumber(r.totalAmount.toFixed(2))}</td>
-							<td>{Math.floor(100 * r.totalAmount / sum)}%</td>
-						</tr>)}
-					</tbody>
-				</table>
+		return <div className="boxed-page" style={{ height: 'calc(100% - 50px)' }}>
+			<div className="thin">
+				<h1>{this.props.mode == ReportsMode.Expense ? "Expenses" : "Income"}</h1>
+				<Card elevation={Elevation.THREE} style={{ height: 'calc(100vh - 180px)' }}>
+					<div className='column'>
+						{this.renderChart(results, sum)}
+					</div>
+					<div className='column' style={{ overflowY: 'auto', height: 'calc(100vh - 180px - 40px)' }}>
+						<table className="pt-table">
+							<tbody>
+								{results.map((r, i) => <tr key={r.name}>
+									<td><Icon icon='symbol-circle' color={Colors[i % Colors.length]} /></td>
+									<td>{r.name}</td>
+									<td>{commaNumber(r.totalAmount.toFixed(2))}</td>
+									<td>{Math.floor(100 * r.totalAmount / sum)}%</td>
+								</tr>)}
+							</tbody>
+						</table>
+					</div>
+				</Card>
 			</div>
 		</div>;
 

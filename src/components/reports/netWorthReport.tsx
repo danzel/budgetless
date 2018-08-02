@@ -4,6 +4,7 @@ import { BankAccount, Category, dateTransformer } from '../../entities';
 import { DateRange } from '../filterBar';
 import { lazyInject, Services, Database } from '../../services';
 import { Not, IsNull, LessThan } from '../../../node_modules/typeorm';
+import { Card, Elevation } from '../../../node_modules/@blueprintjs/core';
 
 export interface NetWorthReportProps {
 	selectedAccounts: BankAccount[];
@@ -111,14 +112,19 @@ export class NetWorthReport extends React.Component<NetWorthReportProps, State> 
 			return null;
 		}
 
-		return <ResponsiveContainer height={500} width='100%'>
-			<LineChart data={this.state.data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-				<XAxis dataKey="month" />
-				<YAxis />
-				<CartesianGrid strokeDasharray="3 3" />
-				<Tooltip formatter={(e: any) => e.toFixed(2)} />
-				<Line type="monotone" dataKey="netWorth" stroke="#8884d8" activeDot={{ r: 8 }} />
-			</LineChart>
-		</ResponsiveContainer>
+		return <div className="boxed-page" style={{marginLeft: 10, marginRight: 10}}>
+			<h1>Net Worth</h1>
+			<Card elevation={Elevation.THREE}>
+				<ResponsiveContainer height={500} width='100%'>
+					<LineChart data={this.state.data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+						<XAxis dataKey="month" />
+						<YAxis />
+						<CartesianGrid strokeDasharray="3 3" />
+						<Tooltip formatter={(e: any) => e.toFixed(2)} />
+						<Line type="monotone" dataKey="netWorth" stroke="#8884d8" activeDot={{ r: 8 }} />
+					</LineChart>
+				</ResponsiveContainer>
+			</Card>
+		</div>
 	}
 }

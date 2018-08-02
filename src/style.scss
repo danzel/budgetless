@@ -55,10 +55,13 @@ html, body, #app, .full-height {
 }
 
 .reports {
-	height: 100%;
+	height: calc(100% - 60px);
 	.column {
 		display: inline-block;
 		vertical-align: top;
+	}
+	.pt-non-ideal-state {
+		height: calc(100% - 120px);
 	}
 }
 
