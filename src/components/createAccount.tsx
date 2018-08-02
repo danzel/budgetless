@@ -35,6 +35,7 @@ export class CreateAccount extends React.Component<CreateAccountProps, State> {
 				createAccountNumber: props.accountNumber
 			}
 		}
+		return null;
 	}
 
 	async addAccount() {

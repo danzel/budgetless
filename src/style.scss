@@ -30,10 +30,18 @@ html, body, #app, .full-height {
 	}
 }
 
-
 .manage-accounts {
 	td {
 		vertical-align: middle !important;
+	}
+}
+
+.manage-categories {
+	table {
+		width: 100%;
+	}
+	td:first-child {
+		width: 100%;
 	}
 }
 

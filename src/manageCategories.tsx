@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { lazyInject, Services, Database } from './services';
 import { Category } from './entities';
-import { Button, Intent, InputGroup, Toaster } from '@blueprintjs/core';
+import { Button, Intent, InputGroup, Toaster, Card, Elevation } from '@blueprintjs/core';
 
 interface State {
 	categories?: Category[];
@@ -75,29 +75,33 @@ export class ManageCategories extends React.Component<{}, State> {
 			return <div>Loading</div>;
 		}
 
-		return <div className="manage-accounts">
-			<h1>Categories</h1>
-			<table className="pt-html-table pt-html-table-striped">
-				<thead>
-					<tr>
-						<th>Name</th>
-					</tr>
-				</thead>
-				<tbody>
-					{this.state.categories.map(c => <tr key={c.categoryId}>
-						<td>{c.name}</td>
-						<td><Button minimal intent={Intent.DANGER} icon="delete" onClick={() => this.deleteCategory(c)} /></td>
-					</tr>)}
-				</tbody>
-				<tfoot>
-					<tr>
-						<td><form onSubmit={e => { e.preventDefault(); this.addCategory(); }}>
-							<InputGroup placeholder="Name" value={this.state.createCategoryName} onChange={(e: React.ChangeEvent<HTMLInputElement>) => this.setState({ createCategoryName: e.target.value })} />
-						</form></td>
-						<td><Button minimal intent={Intent.PRIMARY} icon="add" onClick={() => this.addCategory()} /></td>
-					</tr>
-				</tfoot>
-			</table>
+		return <div className="manage-categories boxed-page">
+			<div className="thin">
+				<h1>Categories</h1>
+				<Card elevation={Elevation.THREE} style={{ padding: 0, height: 'calc(90vh - 100px)', overflowY: 'scroll' }}>
+					<table className="pt-html-table pt-html-table-striped">
+						<tbody>
+							{this.state.categories.map(c => <tr key={c.categoryId}>
+								<td>{c.name}</td>
+								<td><Button minimal intent={Intent.DANGER} icon="delete" onClick={() => this.deleteCategory(c)} /></td>
+							</tr>)}
+						</tbody>
+					</table>
+				</Card>
+
+				<Card elevation={Elevation.THREE} style={{ padding: 0, paddingRight: 17 }}>
+					<table className="pt-html-table">
+						<tbody>
+							<tr>
+								<td><form onSubmit={e => { e.preventDefault(); this.addCategory(); }}>
+									<InputGroup placeholder="Name" value={this.state.createCategoryName} onChange={(e: React.ChangeEvent<HTMLInputElement>) => this.setState({ createCategoryName: e.target.value })} />
+								</form></td>
+								<td><Button minimal intent={Intent.PRIMARY} icon="add" onClick={() => this.addCategory()} /></td>
+							</tr>
+						</tbody>
+					</table>
+				</Card>
+			</div>
 		</div>;
 	}
 }
