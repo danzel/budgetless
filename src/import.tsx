@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { NonIdealState, Tag, Intent, Button, Toaster, Tooltip, Icon, Callout, Card, Spinner } from '@blueprintjs/core';
+import { NonIdealState, Tag, Intent, Button, Toaster, Tooltip, Icon, Callout, Card, Spinner, Elevation } from '@blueprintjs/core';
 import { OfxParser, lazyInject, Services, Database, ImportHelper, ParseTransaction, History, BalanceRecalculator } from './services';
 import { BankAccount, BankTransaction } from './entities';
 import { ImportFile } from './entities/importFile';
@@ -77,13 +77,6 @@ export class Import extends React.Component<{}, State> {
 					action: fixAction
 				});
 			}
-		} else if (file.name.toLowerCase().endsWith(".csv")) {
-			//Assume buxfer CSV
-			this.toaster.show({
-				intent: Intent.DANGER,
-				message: "Not sure how to import this file, did you mean to use the buxfer importer instead?"
-			});
-
 		} else {
 			this.toaster.show({
 				intent: Intent.DANGER,
@@ -131,7 +124,13 @@ export class Import extends React.Component<{}, State> {
 
 	render() {
 		if (this.state.addAccountNumber) {
-			return <Card><CreateAccount accountNumber={this.state.addAccountNumber} accountCreated={() => this.setState({ addAccountNumber: undefined })} /></Card>
+			return <div className="boxed-page">
+				<div className="thin">
+					<Card elevation={Elevation.THREE} style={{ marginTop: 10 }}>
+						<CreateAccount accountNumber={this.state.addAccountNumber} accountCreated={() => this.setState({ addAccountNumber: undefined })} />
+					</Card>
+				</div>
+			</div>
 		}
 		if (!this.state.bankAccount || !this.state.duplicates || !this.state.transactions) {
 			return <div style={{ position: 'relative', width: '100%', height: 'calc(100% - 50px)' }} className={this.state.dropzoneActive ? 'dropzone-active' : ''} onDrop={d => this.onDrop(d)} onDragOver={e => this.onDragEnter(e)} onDragLeave={() => this.onDragLeave()}>
@@ -156,20 +155,25 @@ export class Import extends React.Component<{}, State> {
 			categoryCount.set(cat, count);
 		});
 
-		return <div className="import">
-			<h2>Import</h2>
-			Will import <Tag large intent={Intent.SUCCESS}>{this.state.transactions.length}</Tag> transactions in to account <Tag large>{this.state.bankAccount.name} ({this.state.bankAccount.bankAccountNumber})</Tag>. Ignoring <Tag large intent={Intent.DANGER}>{this.state.duplicates.length}</Tag> duplicates.<br />
-			<Button text="Import" intent={Intent.PRIMARY} onClick={() => this.import()} />
+		return <div className="import boxed-page">
+			<div className="thin">
+				<h2>Import</h2>
+				<Card elevation={Elevation.THREE} style={{ maxHeight: 'calc(100vh - 120px)', overflowY: 'auto' }}>
+					Importing in to account <Tag large style={{ marginBottom: 4 }}>{this.state.bankAccount.name} ({this.state.bankAccount.bankAccountNumber})</Tag><br />
 
-			<table className="pt-html-table pt-html-table-bordered">
-				<thead>
-					<tr><th>Category</th><th>Count</th></tr>
-				</thead>
-				<tbody>
-					{Array.from(categoryCount).map(c => <tr key={c[0]}><td>{c[0]}</td><td>{c[1]}</td></tr>)}
-				</tbody>
-			</table>
+					Will import <Tag large intent={Intent.SUCCESS}>{this.state.transactions.length}</Tag> transactions, ignoring <Tag large intent={Intent.WARNING}>{this.state.duplicates.length}</Tag> duplicates.<br />
+					<Button text="Import" fill intent={Intent.PRIMARY} onClick={() => this.import()} style={{ marginTop: 10, marginBottom: 10 }} />
 
+					<table className="pt-html-table pt-html-table-bordered">
+						<thead>
+							<tr><th>Category</th><th>Count</th></tr>
+						</thead>
+						<tbody>
+							{Array.from(categoryCount).map(c => <tr key={c[0]}><td>{c[0]}</td><td>{c[1]}</td></tr>)}
+						</tbody>
+					</table>
+				</Card>
+			</div>
 		</div>;
 	}
 }
