@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { lazyInject, Services, Database, ImportHelper } from './services';
 import { Category, CategoryRule } from './entities';
-import { Button, Intent, InputGroup, Toaster, MenuItem } from '@blueprintjs/core';
+import { Button, Intent, InputGroup, Toaster, MenuItem, Card, Elevation } from '@blueprintjs/core';
 import { Select } from '@blueprintjs/select';
 
 const CategorySelect = Select.ofType<Category>();
@@ -95,41 +95,49 @@ export class ManageRules extends React.Component<{}, State> {
 
 		let category = this.state.createRuleCategory;
 
-		return <div className="manage-rules">
-			<h1>Rules</h1>
-			<table className="pt-html-table pt-html-table-striped">
-				<thead>
-					<tr>
-						<th>Description to match</th>
-						<th>Category</th>
-					</tr>
-				</thead>
-				<tbody>
-					{this.state.rules.map(c => <tr key={c.categoryRuleId}>
-						<td>{c.descriptionContains}</td>
-						<td>{c.category.name}</td>
-						<td><Button minimal intent={Intent.DANGER} icon="delete" onClick={() => this.deleteRule(c)} /></td>
-					</tr>)}
-				</tbody>
-				<tfoot>
-					<tr>
-						<td><form onSubmit={e => { e.preventDefault(); this.addRule(); }}>
-							<InputGroup placeholder="Description to match" value={this.state.createRuleMatch} onChange={(e: React.ChangeEvent<HTMLInputElement>) => this.setState({ createRuleMatch: e.target.value })} />
-						</form></td>
-						<td><CategorySelect
-							items={this.state.categories}
-							itemRenderer={(i, p) => <MenuItem active={p.modifiers.active} disabled={p.modifiers.disabled} key={i.categoryId} text={i.name} onClick={p.handleClick} />}
-							onItemSelect={c => this.setState({ createRuleCategory: c })}>
-							<Button
-								icon="tag"
-								rightIcon="caret-down"
-								text={category ? category.name : "Select one"}
-							/>
-						</CategorySelect></td>
-						<td><Button minimal intent={Intent.PRIMARY} icon="add" onClick={() => this.addRule()} /></td>
-					</tr>
-				</tfoot>
-			</table>
+		return <div className="manage-rules boxed-page">
+			<div className="thin">
+				<h1>Rules</h1>
+				<Card elevation={Elevation.THREE} style={{ padding: 0, height: 'calc(90vh - 100px)', overflowY: 'scroll' }}>
+					<table className="pt-html-table pt-html-table-striped">
+						<thead>
+							<tr>
+								<th>Description to match</th>
+								<th>Category</th>
+							</tr>
+						</thead>
+						<tbody>
+							{this.state.rules.map(c => <tr key={c.categoryRuleId}>
+								<td>{c.descriptionContains}</td>
+								<td>{c.category.name}</td>
+								<td><Button minimal intent={Intent.DANGER} icon="delete" onClick={() => this.deleteRule(c)} /></td>
+							</tr>)}
+						</tbody>
+					</table>
+				</Card>
+				<Card elevation={Elevation.THREE} style={{ padding: 0 }}>
+					<table className="pt-html-table" style={{ width: '100%', paddingRight: 17 }}>
+						<tfoot>
+							<tr>
+								<td><form onSubmit={e => { e.preventDefault(); this.addRule(); }}>
+									<InputGroup placeholder="Description to match" value={this.state.createRuleMatch} onChange={(e: React.ChangeEvent<HTMLInputElement>) => this.setState({ createRuleMatch: e.target.value })} />
+								</form></td>
+								<td><CategorySelect
+									items={this.state.categories}
+									itemRenderer={(i, p) => <MenuItem active={p.modifiers.active} disabled={p.modifiers.disabled} key={i.categoryId} text={i.name} onClick={p.handleClick} />}
+									onItemSelect={c => this.setState({ createRuleCategory: c })}>
+									<Button
+										icon="tag"
+										rightIcon="caret-down"
+										text={category ? category.name : "Select one"}
+									/>
+								</CategorySelect></td>
+								<td><Button minimal intent={Intent.PRIMARY} icon="add" onClick={() => this.addRule()} /></td>
+							</tr>
+						</tfoot>
+					</table>
+				</Card>
+			</div>
 		</div>;
 	}
 }

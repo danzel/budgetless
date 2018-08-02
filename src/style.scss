@@ -45,6 +45,15 @@ html, body, #app, .full-height {
 	}
 }
 
+.manage-rules {
+	td:first-child {
+		width: 70%;
+	}
+	td:nth-child(2) {
+		width: 25%;
+	}
+}
+
 .reports {
 	height: 100%;
 	.column {
@@ -61,12 +70,12 @@ html, body, #app, .full-height {
 
 .boxed-page {
 	background-color: $light-gray5;
-	height: 100%;
+	height: calc(100% - 60px);
 
 	.thin {
 		margin-left: auto;
 		margin-right: auto;
-		width: 600px;
+		width: 700px;
 	}
 
 	.pt-card {

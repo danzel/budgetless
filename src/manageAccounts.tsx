@@ -46,7 +46,7 @@ export class ManageAccounts extends React.Component<{}, State> {
 		return <div className="manage-accounts boxed-page">
 			<div className="thin">
 				<h1>Manage Accounts</h1>
-				<Card elevation={Elevation.THREE}>
+				<Card elevation={Elevation.THREE} style={{ maxHeight: 'calc(100vh - 320px)', overflowY: 'auto' }}>
 					<h3>Accounts</h3>
 					<table className="pt-html-table pt-html-table-striped pt-fill">
 						<thead>
