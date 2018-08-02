@@ -40,7 +40,6 @@ export class App extends React.Component<{}, State>{
 				<Navbar className="pt-dark">
 					<NavbarGroup align={Alignment.LEFT}>
 						<div className="pt-navbar-heading">budgetless</div>
-						<input className="pt-input" placeholder="Search something..." type="text" />
 					</NavbarGroup>
 					<NavbarGroup align={Alignment.RIGHT}>
 						<Link role="button" to='/' className="pt-button pt-minimal pt-icon-home">Home</Link>
