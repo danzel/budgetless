@@ -4,7 +4,9 @@ import { Route, Switch, Link } from 'react-router-dom';
 import { Import } from './import';
 import { Popover, Position, Menu, MenuItem, Navbar, NavbarGroup, Alignment } from '@blueprintjs/core';
 import { lazyInject, Services, History } from './services';
+
 import { BankTransactionsList } from './bankTransactionsList';
+import { Budgets } from './budgets';
 import { ManageAccounts } from './manageAccounts';
 import { ManageCategories } from './manageCategories';
 import { ManageRules } from './manageRules';
@@ -45,6 +47,7 @@ export class App extends React.Component<{}, State>{
 						<Link role="button" to='/' className="pt-button pt-minimal pt-icon-home">Home</Link>
 						<Link role="button" to='/reports' className="pt-button pt-minimal pt-icon-chart">Reports</Link>
 						<Link role="button" to='/transactions-list' className="pt-button pt-minimal pt-icon-list">Transactions</Link>
+						<Link role="button" to='/budgets' className="pt-button pt-minimal pt-icon-comparison">Budget</Link>
 						<Link role="button" to='/import' className="pt-button pt-minimal pt-icon-import">Import</Link>
 						<span className="pt-navbar-divider"></span>
 						<Popover content={cogMenu} position={Position.BOTTOM_RIGHT}>
@@ -53,6 +56,7 @@ export class App extends React.Component<{}, State>{
 						</NavbarGroup>
 				</Navbar>
 				<Switch>
+					<Route path='/budgets' component={Budgets} />
 					<Route path='/import' component={Import} />
 					<Route path='/manage-accounts' component={ManageAccounts} />
 					<Route path='/manage-categories' component={ManageCategories} />
