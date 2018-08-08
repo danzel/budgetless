@@ -1,6 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany, Index } from 'typeorm';
 import { BankTransaction } from './bankTransaction';
 import { CategoryRule } from './categoryRule';
+import { BudgetCategory } from './budgetCategory';
 
 @Entity()
 export class Category {
@@ -12,6 +13,9 @@ export class Category {
 
 	@OneToMany(type => CategoryRule, bt => bt.category)
 	rules?: CategoryRule[];
+
+	@OneToMany(type => BudgetCategory, bt => bt.category)
+	budgetCategories?: BudgetCategory[];
 
 	@Column()
     @Index({ unique: true })

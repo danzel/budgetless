@@ -1,6 +1,6 @@
 import { injectable } from "inversify";
 import { createConnection, getConnection, Connection, Repository, EntityManager } from "typeorm";
-import { BankAccount, BankTransaction, Category, CategoryRule } from "../entities";
+import { BankAccount, BankTransaction, Category, CategoryRule, Budget } from "../entities";
 import { SqliteConnectionOptions } from "typeorm/driver/sqlite/SqliteConnectionOptions";
 
 let ormConfig: SqliteConnectionOptions = require('../../ormconfig.json')
@@ -16,7 +16,9 @@ export class Database {
 	readyPromise: Promise<void>;
 
 	public connection!: Connection;
+
 	public bankAccounts!: Repository<BankAccount>;
+	public budgets!: Repository<Budget>;
 	public categories!: Repository<Category>;
 	public transactions!: Repository<BankTransaction>;
 	public rules!: Repository<CategoryRule>;
@@ -43,6 +45,7 @@ export class Database {
 
 		await this.connection.runMigrations();
 		this.bankAccounts = this.connection.getRepository(BankAccount);
+		this.budgets = this.connection.getRepository(Budget);
 		this.categories = this.connection.getRepository(Category);
 		this.transactions = this.connection.getRepository(BankTransaction);
 		this.rules = this.connection.getRepository(CategoryRule);
