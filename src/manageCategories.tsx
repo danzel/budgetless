@@ -78,7 +78,7 @@ export class ManageCategories extends React.Component<{}, State> {
 		return <div className="manage-categories boxed-page">
 			<div className="thin">
 				<h1>Categories</h1>
-				<Card elevation={Elevation.THREE} style={{ padding: 0, height: 'calc(90vh - 100px)', overflowY: 'scroll' }}>
+				<Card elevation={Elevation.THREE} style={{ padding: 0, overflowY: 'scroll' }}>
 					<table className="pt-html-table pt-html-table-striped">
 						<tbody>
 							{this.state.categories.map(c => <tr key={c.categoryId}>

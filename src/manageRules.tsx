@@ -98,7 +98,7 @@ export class ManageRules extends React.Component<{}, State> {
 		return <div className="manage-rules boxed-page">
 			<div className="thin">
 				<h1>Rules</h1>
-				<Card elevation={Elevation.THREE} style={{ padding: 0, height: 'calc(90vh - 100px)', overflowY: 'scroll' }}>
+				<Card elevation={Elevation.THREE} style={{ padding: 0, overflowY: 'scroll' }}>
 					<table className="pt-html-table pt-html-table-striped">
 						<thead>
 							<tr>

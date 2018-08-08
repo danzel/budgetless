@@ -2,6 +2,8 @@
 
 html, body, #app, .full-height {
 	height: 100%;
+	display: flex;
+	flex-direction: column;
 }
 
 
@@ -55,13 +57,13 @@ html, body, #app, .full-height {
 }
 
 .reports {
-	height: calc(100% - 60px);
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+
 	.column {
 		display: inline-block;
 		vertical-align: top;
-	}
-	.pt-non-ideal-state {
-		height: calc(100% - 120px);
 	}
 }
 
@@ -73,12 +75,17 @@ html, body, #app, .full-height {
 
 .boxed-page {
 	background-color: $light-gray5;
-	height: calc(100% - 60px);
+	flex: 1;
+	display: flex;
+	flex-direction: column;
 
 	.thin {
 		margin-left: auto;
 		margin-right: auto;
 		width: 700px;
+
+		display: flex;
+		flex-direction: column;
 	}
 
 	.pt-card {

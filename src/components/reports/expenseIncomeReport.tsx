@@ -151,14 +151,14 @@ export class ExpenseIncomeReport extends React.Component<ExpenseIncomeReportProp
 			return <NonIdealState title="No Results" visual="graph-remove" />;
 		}
 
-		return <div className="boxed-page" style={{ height: 'calc(100% - 50px)' }}>
+		return <div className="boxed-page">
 			<div className="thin">
 				<h1>{this.props.mode == ReportsMode.Expense ? "Expenses" : "Income"}</h1>
-				<Card elevation={Elevation.THREE} style={{ height: 'calc(100vh - 180px)' }}>
+				<Card elevation={Elevation.THREE}>
 					<div className='column'>
 						{this.renderChart(results, sum)}
 					</div>
-					<div className='column' style={{ overflowY: 'auto', height: 'calc(100vh - 180px - 40px)' }}>
+					<div className='column' style={{ overflowY: 'auto' }}>
 						<table className="pt-table">
 							<tbody>
 								{results.map((r, i) => <tr key={r.name}>
