@@ -4,7 +4,7 @@ import { Services } from "./serviceEnum";
 import { Category, BankAccount, dateTransformer, EveryCategory, UncategorisedCategory } from "../entities";
 import { Dayjs } from "../../node_modules/dayjs";
 
-interface CategorySum {
+export interface CategorySum {
 	category: Category;
 	totalAmount: number;
 }

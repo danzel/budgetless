@@ -92,3 +92,23 @@ html, body, #app, .full-height {
 		margin-bottom: 20px;
 	}
 }
+
+.budgets {
+	table td:not(:first-child), table th:not(:first-child) {
+		text-align: right;
+	}
+
+	.percent.on-budget {
+		color: green;
+	}
+	.percent.over-budget {
+		color: red;
+	}
+
+	.no-budget {
+		opacity: 0.5;
+	}
+	.overall {
+		font-weight: bold;
+	}
+}
