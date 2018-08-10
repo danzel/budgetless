@@ -5,7 +5,7 @@ import { ReportsMode } from './reportsMode';
 import { PieChart, Pie, Cell, Tooltip } from 'recharts';
 import { dateTransformer, EveryCategory, UncategorisedCategory, BankAccount, Category } from '../../entities';
 import { DateRange } from '../filterBar';
-import { lazyInject, Services, Database } from '../../services';
+import { lazyInject, Services, QueryHelper } from '../../services';
 
 //https://graphicdesign.stackexchange.com/questions/3682/where-can-i-find-a-large-palette-set-of-contrasting-colors-for-coloring-many-d
 const Colors = [
@@ -49,8 +49,8 @@ interface State {
 }
 
 export class ExpenseIncomeReport extends React.Component<ExpenseIncomeReportProps, State> {
-	@lazyInject(Services.Database)
-	database!: Database;
+	@lazyInject(Services.QueryHelper)
+	queryHelper!: QueryHelper;
 
 	constructor(props: ExpenseIncomeReportProps) {
 		super(props);
@@ -74,52 +74,13 @@ export class ExpenseIncomeReport extends React.Component<ExpenseIncomeReportProp
 			return;
 		}
 
-		//Gotta do this group by manually as "IN" using typeorm QueryBuilder makes bad SQL
-
-		let query = "SELECT name, SUM(amount) AS totalAmount " +
-			"FROM bank_transaction " +
-			"LEFT JOIN category ON categoryCategoryId=categoryId ";
-
-		//bankAccount
-		query += "WHERE bankAccountBankAccountId IN (?";
-		for (let i = 1; i < this.props.selectedAccounts.length; i++) {
-			query += ",?";
-		}
-		query += ") ";
-		let parameters: any[] = this.props.selectedAccounts.map(a => a.bankAccountId);
-
-		//selectedDateRange
 		let start = this.props.selectedDateRange.getStart();
 		let end = this.props.selectedDateRange.getEnd();
-		if (start && end) {
-			query += "AND date >= ? AND date <= ? ";
-			parameters.push(dateTransformer.to(start));
-			parameters.push(dateTransformer.to(end));
-		}
-
-		//selectedCategory
-		if (this.props.selectedCategory.categoryId == EveryCategory.categoryId) {
-			//No category filter
-		} else if (this.props.selectedCategory.categoryId == UncategorisedCategory.categoryId) {
-			query += "AND categoryCategoryId IS NULL ";
-		} else {
-			query += "AND categoryCategoryId=? ";
-			parameters.push(this.props.selectedCategory.categoryId);
-		}
-
-		query += " GROUP BY name";
-		let res: BankTransactionGroup[] = await this.database.connection.query(query, parameters);
-		console.log(res.length);
-		console.log(res);
-
-		res.forEach(r => {
-			if (!r.name) {
-				r.name = 'Uncategorised';
-			}
-		});
+		let dr = start && end ? { start, end } : undefined;
+		let catSum = await this.queryHelper.calculateCategorySum(dr, this.props.selectedCategory, this.props.selectedAccounts);
 
 		this.setState({
-			results: res
+			results: catSum.map(s => { return { name: s.category.name, totalAmount: s.totalAmount } })
 		});
 	}
 
