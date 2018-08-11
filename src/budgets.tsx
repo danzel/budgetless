@@ -318,7 +318,7 @@ export class Budgets extends React.Component<{}, State> {
 
 		return <div className="thin">
 			<h1><EditableText value={budget.name} onChange={e => this.setSelectedBudgetName(e)} onConfirm={() => this.saveSelectedBudget()} /></h1>
-			<Card elevation={Elevation.THREE}>
+			<Card elevation={Elevation.THREE} style={{ overflowY: 'auto' }}>
 				Viewing 1 Jan - 31 June (6 months)
 				<table className="pt-html-table" style={{ width: '100%' }}>
 					<thead>
@@ -335,7 +335,7 @@ export class Budgets extends React.Component<{}, State> {
 							{this.renderPercentCell(-c.thisYear / c.budget)}
 							<td>{c.category.categoryId != UncategorisedCategory.categoryId && <Popover interactionKind={PopoverInteractionKind.CLICK}>
 								<Button icon='label' minimal className="small-button" style={{ opacity: c.budgetCategory.note ? 1 : 0.3 }} />
-								<TextArea value={c.budgetCategory.note} style={{margin:5, width: 400, height: 110}} onChange={e => this.setNote(c.category, e.currentTarget.value)} onBlur={() => this.saveBudgetCategory(c.budgetCategory)} />
+								<TextArea value={c.budgetCategory.note} style={{ margin: 5, width: 400, height: 110 }} onChange={e => this.setNote(c.category, e.currentTarget.value)} onBlur={() => this.saveBudgetCategory(c.budgetCategory)} />
 							</Popover>
 							}</td>
 						</tr>)}
