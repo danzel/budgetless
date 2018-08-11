@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Button, MenuItem, Popover, Intent, Position, Toaster } from '@blueprintjs/core';
+import { Button, MenuItem, Popover, Intent, Position, Toaster, PopoverInteractionKind, TextArea } from '@blueprintjs/core';
 import { Select } from '@blueprintjs/select';
 import { BankAccount, Category, BankTransaction, dateTransformer, CategoryRule, AddCategory, UncategorisedCategory, EveryCategory } from './entities';
 import { lazyInject, Services, Database, ImportHelper } from './services';
@@ -201,6 +201,22 @@ export class BankTransactionsList extends React.Component<{}, State> {
 		});
 	}
 
+	private async setNote(t: BankTransaction, note: string) {
+		//recreate it so we can replace it in the react state
+		let recreated = new BankTransaction(t.bankAccount, t.category, t.importFile, t.date, t.amount, t.description, t.balance, t.uniqueId);
+		recreated.bankTransactionId = t.bankTransactionId;
+		recreated.userNote = note;
+
+		//Replace the item with the new one
+		this.setState({
+			transactions: this.state.transactions.map(st => st == t ? recreated : st)
+		});
+	}
+
+	private saveTransaction(t: BankTransaction) {
+		this.database.transactions.save(t);
+	}
+
 	private async addCategory(categoryName: string): Promise<Category> {
 		let category = new Category(categoryName);
 		await this.database.categories.save(category);
@@ -280,6 +296,14 @@ export class BankTransactionsList extends React.Component<{}, State> {
 			{
 				Header: 'Description',
 				accessor: 'description'
+			},
+			{
+				Header: '',
+				width: 40,
+				Cell: d => <Popover interactionKind={PopoverInteractionKind.CLICK}>
+					<Button icon='annotation' style={{ opacity: (d.original as BankTransaction).userNote ? 1 : 0.3 }} />
+					<TextArea value={(d.original as BankTransaction).userNote} style={{ margin: 5, width: 400, height: 110 }} onChange={e => this.setNote(d.original, e.currentTarget.value)} onBlur={() => this.saveTransaction(d.original)} />
+				</Popover>
 			},
 			{
 				Header: 'Category',
