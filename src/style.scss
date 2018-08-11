@@ -111,4 +111,11 @@ html, body, #app, .full-height {
 	.overall {
 		font-weight: bold;
 	}
+
+	.small-button {
+		padding-top: 0;
+		padding-bottom: 0;
+		min-height: 10px;
+		vertical-align: bottom;
+	}
 }

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as dayjs from 'dayjs';
-import { Card, EditableText, Elevation, Navbar, NavbarGroup, Alignment, InputGroup, Icon, Button, NavbarDivider, ControlGroup, Intent, NonIdealState, Toaster } from '@blueprintjs/core';
+import { Card, EditableText, Elevation, Navbar, NavbarGroup, Alignment, InputGroup, Icon, Button, NavbarDivider, ControlGroup, Intent, NonIdealState, Toaster, Popover, PopoverInteractionKind, TextArea } from '@blueprintjs/core';
 import { Services, Database, lazyInject } from './services';
 import { Budget, Category, BudgetCategory, UncategorisedCategory } from './entities';
 import { CategorySum, QueryHelper } from './services/queryHelper';
@@ -200,7 +200,28 @@ export class Budgets extends React.Component<{}, State> {
 		})
 	}
 
-	saveBudgetCategory(bc: BudgetCategory): any {
+	//This is a copy/paste of updateBudgetAmount above
+	private setNote(category: Category, note: string) {
+		let b = this.state.selectedBudget!
+		let bc = b.budgetCategories!.find(bc => bc.category.categoryId == category.categoryId)!;
+
+		let clone = new BudgetCategory(bc.budget, bc.category);
+		clone.budgetCategoryId = bc.budgetCategoryId;
+		clone.amount = bc.amount;
+		clone.note = note;
+
+		let bClone = new Budget(b.name);
+		bClone.budgetId = b.budgetId;
+		bClone.budgetCategories = b.budgetCategories!.map(a => a.category.categoryId == clone.category.categoryId ? clone : a);
+
+		this.setState({
+			budgets: this.state.budgets!.map(a => a.budgetId == bClone.budgetId ? bClone : a),
+			selectedBudget: bClone,
+		})
+	}
+
+
+	private saveBudgetCategory(bc: BudgetCategory): any {
 		this.database.entityManager.save(bc);
 	}
 
@@ -234,7 +255,7 @@ export class Budgets extends React.Component<{}, State> {
 
 					<Button minimal text="View Year" />
 					<div className="pt-select">
-						<select className="pt-select" value={this.state.selectedYear} onChange={e => this.setState({ selectedYear: parseInt(e.currentTarget.value)}, () => this.load())}>
+						<select className="pt-select" value={this.state.selectedYear} onChange={e => this.setState({ selectedYear: parseInt(e.currentTarget.value) }, () => this.load())}>
 							{/* TODO: These dates should be decided off the years there is data for */}
 							<option value={2018}>2018</option>
 							<option value={2017}>2017</option>
@@ -301,7 +322,7 @@ export class Budgets extends React.Component<{}, State> {
 				Viewing 1 Jan - 31 June (6 months)
 				<table className="pt-html-table" style={{ width: '100%' }}>
 					<thead>
-						<tr><th>Category</th><th>{fromDb.twoYearsAgoYear}</th><th>{fromDb.lastYearYear}</th><th>Budget</th><th>{fromDb.thisYearYear}</th><th>% (So Far)</th><th>% (Year)</th></tr>
+						<tr><th>Category</th><th>{fromDb.twoYearsAgoYear}</th><th>{fromDb.lastYearYear}</th><th>Budget</th><th>{fromDb.thisYearYear}</th><th>% (So Far)</th><th>% (Year)</th><th>Note</th></tr>
 					</thead>
 					<tbody>
 						{categoryAmounts.map(c => <tr key={c.category.categoryId} className={c.budget ? 'has-budget' : 'no-budget'}>
@@ -312,6 +333,11 @@ export class Budgets extends React.Component<{}, State> {
 							<td><MoneyAmount hideDecimals amount={c.thisYear} /></td>
 							{this.renderPercentCell(-c.thisYear / (c.budget * yearPercent))}
 							{this.renderPercentCell(-c.thisYear / c.budget)}
+							<td>{c.category.categoryId != UncategorisedCategory.categoryId && <Popover interactionKind={PopoverInteractionKind.CLICK}>
+								<Button icon='label' minimal className="small-button" style={{ opacity: c.budgetCategory.note ? 1 : 0.3 }} />
+								<TextArea value={c.budgetCategory.note} style={{margin:5, width: 400, height: 110}} onChange={e => this.setNote(c.category, e.currentTarget.value)} onBlur={() => this.saveBudgetCategory(c.budgetCategory)} />
+							</Popover>
+							}</td>
 						</tr>)}
 
 						<tr className="overall">
@@ -322,7 +348,7 @@ export class Budgets extends React.Component<{}, State> {
 							<td><MoneyAmount hideDecimals amount={overallAmount} /></td>
 							{this.renderPercentCell(-overallAmount / (overallBudget * yearPercent))}
 							{this.renderPercentCell(-overallAmount / overallBudget)}
-						</tr>							
+						</tr>
 					</tbody>
 				</table>
 
