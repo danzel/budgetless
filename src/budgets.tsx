@@ -9,6 +9,7 @@ import { MoneyAmount } from './components';
 interface State {
 	budgets?: Budget[];
 
+	selectedYear: number;
 	selectedBudget?: Budget;
 
 	includeNoBudgetRows: boolean;
@@ -23,6 +24,8 @@ interface State {
 		twoYearsAgo: CategorySum[];
 		lastYear: CategorySum[];
 		thisYear: CategorySum[];
+
+		latestTransactionDate: dayjs.Dayjs;
 	}
 }
 
@@ -40,6 +43,7 @@ export class Budgets extends React.Component<{}, State> {
 		super(props);
 
 		this.state = {
+			selectedYear: dayjs().year(),
 			includeNoBudgetRows: false
 		};
 
@@ -63,11 +67,18 @@ export class Budgets extends React.Component<{}, State> {
 			}
 		});
 
-		let now = dayjs();
+		let now = dayjs().set('year', this.state.selectedYear).startOf('year');
 
 		let twoYearsAgo = await this.queryHelper.calculateCategorySum({ start: now.subtract(2, 'year').startOf('year'), end: now.subtract(2, 'year').endOf('year') });
 		let lastYear = await this.queryHelper.calculateCategorySum({ start: now.subtract(1, 'year').startOf('year'), end: now.subtract(1, 'year').endOf('year') });
 		let thisYear = await this.queryHelper.calculateCategorySum({ start: now.startOf('year'), end: now.endOf('year') });
+
+		let latestTransaction = await this.database.transactions.find({
+			order: {
+				date: 'DESC'
+			},
+			take: 1
+		});
 
 		budgets.forEach(b => this.addMissingCategories(b, categories));
 
@@ -82,7 +93,9 @@ export class Budgets extends React.Component<{}, State> {
 
 				twoYearsAgo,
 				lastYear,
-				thisYear
+				thisYear,
+
+				latestTransactionDate: latestTransaction && latestTransaction.length > 0 ? latestTransaction[0].date : dayjs()
 			},
 			selectedBudget: budgets[0]
 		});
@@ -221,12 +234,12 @@ export class Budgets extends React.Component<{}, State> {
 
 					<Button minimal text="View Year" />
 					<div className="pt-select">
-						<select className="pt-select">
+						<select className="pt-select" value={this.state.selectedYear} onChange={e => this.setState({ selectedYear: parseInt(e.currentTarget.value)}, () => this.load())}>
 							{/* TODO: These dates should be decided off the years there is data for */}
-							<option>2018</option>
-							<option>2017</option>
-							<option>2016</option>
-							<option>2015</option>
+							<option value={2018}>2018</option>
+							<option value={2017}>2017</option>
+							<option value={2016}>2016</option>
+							<option value={2015}>2015</option>
 						</select>
 					</div>
 
@@ -264,6 +277,14 @@ export class Budgets extends React.Component<{}, State> {
 			categoryAmounts = categoryAmounts.filter(c => c.budget);
 		}
 
+		let yearPercent = 1;
+		if (this.state.selectedYear > fromDb.latestTransactionDate.year()) {
+			yearPercent = 0;
+		} else if (this.state.selectedYear == fromDb.latestTransactionDate.year()) {
+			let startOfYear = fromDb.latestTransactionDate.startOf('year');
+			yearPercent = fromDb.latestTransactionDate.diff(startOfYear, 'year', true);
+		}
+
 		//Only counting categories with a budget
 		let overallBudget = 0;
 		let overallAmount = 0;
@@ -289,7 +310,7 @@ export class Budgets extends React.Component<{}, State> {
 							<td><MoneyAmount hideDecimals amount={c.lastYear} /></td>
 							<th>{c.category.categoryId != UncategorisedCategory.categoryId && <><EditableText placeholder="Click to Set" value={c.budget == 0 ? '' : c.budget.toFixed(0)} onChange={v => this.updateBudgetAmount(c.category, v)} onConfirm={() => this.saveBudgetCategory(c.budgetCategory)} /></>}</th>
 							<td><MoneyAmount hideDecimals amount={c.thisYear} /></td>
-							<td>??%</td>
+							{this.renderPercentCell(-c.thisYear / (c.budget * yearPercent))}
 							{this.renderPercentCell(-c.thisYear / c.budget)}
 						</tr>)}
 
@@ -299,7 +320,7 @@ export class Budgets extends React.Component<{}, State> {
 							<td></td>
 							<td><MoneyAmount hideDecimals amount={-overallBudget} /></td>
 							<td><MoneyAmount hideDecimals amount={overallAmount} /></td>
-							<td>??%</td>
+							{this.renderPercentCell(-overallAmount / (overallBudget * yearPercent))}
 							{this.renderPercentCell(-overallAmount / overallBudget)}
 						</tr>							
 					</tbody>
