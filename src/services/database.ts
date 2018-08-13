@@ -1,9 +1,18 @@
 import { injectable } from "inversify";
+import { remote } from 'electron';
+import * as path from 'path';
+import * as fs from 'fs';
 import { createConnection, getConnection, Connection, Repository, EntityManager } from "typeorm";
 import { BankAccount, BankTransaction, Category, CategoryRule, Budget } from "../entities";
 import { SqliteConnectionOptions } from "typeorm/driver/sqlite/SqliteConnectionOptions";
 
-let ormConfig: SqliteConnectionOptions = require('../../ormconfig.json')
+let ormConfig: SqliteConnectionOptions = require('../../ormconfig.json');
+const directory = path.join((remote.getCurrentWindow() as any).documentsPath, 'budgetless');
+if (!fs.existsSync(directory)) {
+	fs.mkdirSync(directory);
+}
+(ormConfig as any).database = path.join(directory, 'database.sqlite');
+console.log('database path', ormConfig.database);
 
 /**
  * Holds database and repositories.
@@ -16,6 +25,7 @@ export class Database {
 	readyPromise: Promise<void>;
 
 	public connection!: Connection;
+	public databaseLocation!: string;
 
 	public bankAccounts!: Repository<BankAccount>;
 	public budgets!: Repository<Budget>;
@@ -42,6 +52,7 @@ export class Database {
 		}
 
 		this.connection = await createConnection(config);
+		this.databaseLocation = directory;
 
 		await this.connection.runMigrations();
 		this.bankAccounts = this.connection.getRepository(BankAccount);

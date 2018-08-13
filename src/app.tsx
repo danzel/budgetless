@@ -7,6 +7,7 @@ import { lazyInject, Services, History } from './services';
 
 import { BankTransactionsList } from './bankTransactionsList';
 import { Budgets } from './budgets';
+import { Home } from './home';
 import { ManageAccounts } from './manageAccounts';
 import { ManageCategories } from './manageCategories';
 import { ManageRules } from './manageRules';
@@ -63,6 +64,8 @@ export class App extends React.Component<{}, State>{
 					<Route path='/manage-rules' component={ManageRules} />
 					<Route path='/reports' component={Reports} />
 					<Route path='/transactions-list' component={BankTransactionsList} />
+
+					<Route path='/' component={Home} />
 				</Switch>
 			</div>);
 	}

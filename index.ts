@@ -15,6 +15,9 @@ function createMainWindow() {
     window.webContents.openDevTools()
   }
 
+  //Pass in any variables needed 
+  (window as any).documentsPath = app.getPath('documents');
+  
   window.loadFile('src/index.html');
 
   window.on('closed', () => {
