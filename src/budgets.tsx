@@ -113,6 +113,7 @@ export class Budgets extends React.Component<{}, State> {
 		}
 
 		let budget = new Budget(newBudgetName);
+		budget.budgetCategories = [];
 		await this.database.budgets.save(budget);
 
 		let budgets = [budget, ...this.state.budgets!];
