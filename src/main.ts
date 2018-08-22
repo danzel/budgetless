@@ -1,9 +1,10 @@
 import { app, BrowserWindow } from 'electron'
 import {enableLiveReload} from 'electron-compile';
+import * as isDev from 'electron-is-dev';
 
-enableLiveReload();
-
-const isDevelopment = process.env.NODE_ENV !== 'production'
+if (isDev) {
+  enableLiveReload();
+}
 
 // global reference to mainWindow (necessary to prevent window from being garbage collected)
 let mainWindow: BrowserWindow | null;
@@ -11,7 +12,7 @@ let mainWindow: BrowserWindow | null;
 function createMainWindow() {
   const window = new BrowserWindow()
 
-  if (isDevelopment) {
+  if (isDev) {
     window.webContents.openDevTools()
   }
 
