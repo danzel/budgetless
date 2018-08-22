@@ -25,6 +25,7 @@ interface State {
 		lastYear: CategorySum[];
 		thisYear: CategorySum[];
 
+		earliestTransactionDate: dayjs.Dayjs;
 		latestTransactionDate: dayjs.Dayjs;
 	}
 }
@@ -73,6 +74,12 @@ export class Budgets extends React.Component<{}, State> {
 		let lastYear = await this.queryHelper.calculateCategorySum({ start: now.subtract(1, 'year').startOf('year'), end: now.subtract(1, 'year').endOf('year') });
 		let thisYear = await this.queryHelper.calculateCategorySum({ start: now.startOf('year'), end: now.endOf('year') });
 
+		let earliestTransaction = await this.database.transactions.find({
+			order: {
+				date: 'ASC'
+			},
+			take: 1
+		});
 		let latestTransaction = await this.database.transactions.find({
 			order: {
 				date: 'DESC'
@@ -95,6 +102,7 @@ export class Budgets extends React.Component<{}, State> {
 				lastYear,
 				thisYear,
 
+				earliestTransactionDate: earliestTransaction && earliestTransaction.length > 0 ? earliestTransaction[0].date : dayjs(),
 				latestTransactionDate: latestTransaction && latestTransaction.length > 0 ? latestTransaction[0].date : dayjs()
 			},
 			selectedBudget: budgets[0]
@@ -237,6 +245,13 @@ export class Budgets extends React.Component<{}, State> {
 			return null;
 		}
 
+		let years = [];
+		if (this.state.fromDb) {
+			for (let y = this.state.fromDb.latestTransactionDate.year(); y >= this.state.fromDb.earliestTransactionDate.year(); y--) {
+				years.push(y);
+			}
+		}
+
 		return <div className="budgets boxed-page">
 			<Navbar>
 				<NavbarGroup align={Alignment.LEFT}>
@@ -257,11 +272,7 @@ export class Budgets extends React.Component<{}, State> {
 					<Button minimal text="View Year" />
 					<div className="pt-select">
 						<select className="pt-select" value={this.state.selectedYear} onChange={e => this.setState({ selectedYear: parseInt(e.currentTarget.value) }, () => this.load())}>
-							{/* TODO: These dates should be decided off the years there is data for */}
-							<option value={2018}>2018</option>
-							<option value={2017}>2017</option>
-							<option value={2016}>2016</option>
-							<option value={2015}>2015</option>
+							{years.map(y => <option key={y} value={y}>{y}</option>)}
 						</select>
 					</div>
 
