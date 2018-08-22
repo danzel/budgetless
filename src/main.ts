@@ -10,7 +10,10 @@ if (isDev) {
 let mainWindow: BrowserWindow | null;
 
 function createMainWindow() {
-  const window = new BrowserWindow()
+  const window = new BrowserWindow({
+    width: 900,
+    height: 900
+  })
 
   if (isDev) {
     window.webContents.openDevTools()
