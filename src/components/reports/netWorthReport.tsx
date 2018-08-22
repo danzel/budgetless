@@ -104,7 +104,6 @@ export class NetWorthReport extends React.Component<NetWorthReportProps, State> 
 		this.setState({
 			data
 		})
-		console.log(data);
 	}
 
 	render() {

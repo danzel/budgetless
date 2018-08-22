@@ -74,8 +74,6 @@ export class OfxParser {
 			balance -= t.amount;
 		}
 
-		console.log(transactions[0].balance, transactions[transactions.length - 1].balance);
-
 		return {
 			bankAccountNumber,
 			importFile: new ImportFile(fileName, fileContents, dayjs()),

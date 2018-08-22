@@ -38,7 +38,6 @@ export class Import extends React.Component<{}, State> {
 	}
 
 	onDrop(ev: React.DragEvent) {
-		console.log('on drop');
 		ev.preventDefault();
 
 		this.onDropAsync(ev.dataTransfer.files[0]);
