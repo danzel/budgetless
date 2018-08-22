@@ -271,7 +271,6 @@ export class Budgets extends React.Component<{}, State> {
 				</NavbarGroup>
 			</Navbar>
 			{!this.state.selectedBudget ? <NonIdealState title="You have no budgets" description="Create one using the blue button at the top left" visual="comparison" /> : this.renderSelectedBudget(this.state.selectedBudget)}
-			}
 		</div>;
 	}
 
@@ -319,7 +318,7 @@ export class Budgets extends React.Component<{}, State> {
 
 		return <div className="thin">
 			<h1><EditableText value={budget.name} onChange={e => this.setSelectedBudgetName(e)} onConfirm={() => this.saveSelectedBudget()} /></h1>
-			<Card elevation={Elevation.THREE} style={{ overflowY: 'auto' }}>
+			<Card elevation={Elevation.THREE} style={{ display: 'flex', flexDirection: 'column' }}>
 				Viewing 1 Jan - 31 June (6 months)
 				<table className="pt-html-table" style={{ width: '100%' }}>
 					<thead>
@@ -340,7 +339,9 @@ export class Budgets extends React.Component<{}, State> {
 							</Popover>
 							}</td>
 						</tr>)}
+					</tbody>
 
+					<tfoot>
 						<tr className="overall">
 							<td>Overall</td>
 							<td></td>
@@ -350,7 +351,7 @@ export class Budgets extends React.Component<{}, State> {
 							{this.renderPercentCell(-overallAmount / (overallBudget * yearPercent))}
 							{this.renderPercentCell(-overallAmount / overallBudget)}
 						</tr>
-					</tbody>
+					</tfoot>
 				</table>
 
 			</Card>
