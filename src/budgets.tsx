@@ -299,11 +299,14 @@ export class Budgets extends React.Component<{}, State> {
 		}
 
 		let yearPercent = 1;
+		let selectedDateRangeText = 'Viewing 1 Jan - ' + dayjs(this.state.selectedYear + '-12-01').endOf('month').format('D MMM');
 		if (this.state.selectedYear > fromDb.latestTransactionDate.year()) {
 			yearPercent = 0;
+			selectedDateRangeText = 'No date for selected period';
 		} else if (this.state.selectedYear == fromDb.latestTransactionDate.year()) {
 			let startOfYear = fromDb.latestTransactionDate.startOf('year');
 			yearPercent = fromDb.latestTransactionDate.diff(startOfYear, 'year', true);
+			selectedDateRangeText = 'Viewing 1 Jan - ' + fromDb.latestTransactionDate.format('D MMM');
 		}
 
 		//Only counting categories with a budget
@@ -319,7 +322,7 @@ export class Budgets extends React.Component<{}, State> {
 		return <div className="thin">
 			<h1><EditableText value={budget.name} onChange={e => this.setSelectedBudgetName(e)} onConfirm={() => this.saveSelectedBudget()} /></h1>
 			<Card elevation={Elevation.THREE} style={{ display: 'flex', flexDirection: 'column' }}>
-				Viewing 1 Jan - 31 June (6 months)
+				{selectedDateRangeText}
 				<table className="pt-html-table" style={{ width: '100%' }}>
 					<thead>
 						<tr><th>Category</th><th>{fromDb.twoYearsAgoYear}</th><th>{fromDb.lastYearYear}</th><th>Budget</th><th>{fromDb.thisYearYear}</th><th>% (So Far)</th><th>% (Year)</th><th>Note</th></tr>
