@@ -116,7 +116,7 @@ export class ExpenseIncomeReport extends React.Component<ExpenseIncomeReportProp
 			<div className="thin">
 				<h1>{this.props.mode == ReportsMode.Expense ? "Expenses" : "Income"}</h1>
 				<Card elevation={Elevation.THREE}>
-					<div className='column'>
+					<div className='column' style={{ paddingRight: 40 }}>
 						{this.renderChart(results, sum)}
 					</div>
 					<div className='column' style={{ overflowY: 'auto' }}>

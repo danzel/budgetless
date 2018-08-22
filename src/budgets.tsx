@@ -113,8 +113,9 @@ export class Budgets extends React.Component<{}, State> {
 		}
 
 		let budget = new Budget(newBudgetName);
-		budget.budgetCategories = [];
 		await this.database.budgets.save(budget);
+		budget.budgetCategories = [];
+		this.addMissingCategories(budget);
 
 		let budgets = [budget, ...this.state.budgets!];
 
@@ -164,7 +165,6 @@ export class Budgets extends React.Component<{}, State> {
 		//Replace the budget in the budgets array
 		var budgets = this.state.budgets!.map(b => b.budgetId == budget.budgetId ? budget : b);
 
-		console.log('ssbn ' + name);
 		this.setState({
 			selectedBudget: budget,
 			budgets
